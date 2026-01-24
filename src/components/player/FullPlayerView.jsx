@@ -1,10 +1,23 @@
 /**
  * FullPlayerView Component
- * Full-screen player view with custom controls
+ * Full-screen player view with Soft Gold theme
  */
 import { useState } from "react";
+import {
+  ChevronDown,
+  X,
+  SkipBack,
+  SkipForward,
+  Rewind,
+  FastForward,
+  Play,
+  Pause,
+  Volume2,
+  BarChart3,
+} from "lucide-react";
 import { usePlayer } from "../../contexts/PlayerContext";
 import { formatTime } from "../../utils/formatters";
+import { hapticLight, hapticMedium } from "../../utils/haptics";
 import RepeatButton from "./RepeatButton";
 import ShuffleButton from "./ShuffleButton";
 import AutoPlayButton from "./AutoPlayButton";
@@ -49,94 +62,90 @@ function FullPlayerView() {
     setVolume(parseInt(e.target.value));
   };
 
+  // Handle toggle with haptic
+  const handleToggle = () => {
+    hapticMedium();
+    toggle();
+  };
+
   // Speed options
   const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 
   return (
-    <div className="fixed inset-0 z-50 bg-dark-900 flex flex-col">
+    <div className="fixed inset-0 z-50 bg-cream-200 flex flex-col animate-slide-up">
       {/* Header */}
-      <div className="flex items-center justify-between p-4">
+      <div className="flex items-center justify-between p-4 border-b border-cream-400/30">
         <button
-          onClick={toggleExpanded}
-          className="w-10 h-10 flex items-center justify-center touch-target"
+          onClick={() => {
+            hapticLight();
+            toggleExpanded();
+          }}
+          className="w-10 h-10 flex items-center justify-center rounded-full 
+                     bg-cream-300 hover:bg-cream-400 transition-colors touch-target
+                     focus-visible:ring-2 focus-visible:ring-gold-700"
+          aria-label="Thu nhỏ"
         >
-          <svg
-            className="w-6 h-6 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
+          <ChevronDown className="w-6 h-6 text-cream-800" />
         </button>
-        <h2 className="text-white font-medium">Now Playing</h2>
+        <h2 className="text-cream-900 font-semibold">Đang phát</h2>
         <button
-          onClick={closePlayer}
-          className="w-10 h-10 flex items-center justify-center touch-target"
+          onClick={() => {
+            hapticLight();
+            closePlayer();
+          }}
+          className="w-10 h-10 flex items-center justify-center rounded-full
+                     bg-cream-300 hover:bg-cream-400 transition-colors touch-target
+                     focus-visible:ring-2 focus-visible:ring-gold-700"
+          aria-label="Đóng"
         >
-          <svg
-            className="w-6 h-6 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <X className="w-6 h-6 text-cream-800" />
         </button>
       </div>
 
       {/* Thumbnail & Info */}
       <div className="flex-1 flex flex-col items-center justify-center px-8 overflow-y-auto">
-        <div className="relative w-64 h-64 mb-6 flex-shrink-0">
+        <div className="relative w-64 h-64 sm:w-72 sm:h-72 mb-6 flex-shrink-0">
           <img
             src={currentTrack.thumbnail}
             alt={currentTrack.title}
-            className={`w-full h-full rounded-2xl object-cover shadow-2xl ${isPlaying ? "glow" : ""}`}
+            className={`w-full h-full rounded-2xl object-cover shadow-soft-3d-lg transition-all duration-300 ${
+              isPlaying ? "glow-gold scale-[1.02]" : ""
+            }`}
           />
           {(isLoading || isBuffering) && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl">
-              <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center bg-cream-900/50 rounded-2xl">
+              <div className="w-12 h-12 border-4 border-gold-400 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
 
           {/* Playing animation indicator */}
           {isPlaying && !isLoading && !isBuffering && (
-            <div className="absolute bottom-2 right-2 p-2 bg-black/60 backdrop-blur-sm rounded-lg">
+            <div className="absolute bottom-2 right-2 p-2 bg-cream-900/60 backdrop-blur-sm rounded-lg">
               <PlayingAnimation size="md" barCount={4} />
             </div>
           )}
 
           {/* Audio Visualizer Overlay */}
           {showVisualizer && isPlaying && !isLoading && !isBuffering && (
-            <div className="absolute bottom-0 left-0 right-0 h-16 rounded-b-2xl overflow-hidden bg-gradient-to-t from-black/60 to-transparent">
+            <div className="absolute bottom-0 left-0 right-0 h-16 rounded-b-2xl overflow-hidden bg-gradient-to-t from-cream-900/60 to-transparent">
               <AudioVisualizer enabled={showVisualizer} barCount={16} />
             </div>
           )}
         </div>
 
-        <h3 className="text-xl font-bold text-white text-center mb-1 line-clamp-2">
+        <h3 className="text-xl font-bold text-cream-900 text-center mb-1 line-clamp-2">
           {currentTrack.title}
         </h3>
-        <p className="text-white/60 text-center mb-2">{currentTrack.author}</p>
+        <p className="text-cream-600 text-center mb-2">{currentTrack.author}</p>
 
         {/* Enhanced Time Display */}
         <div className="flex items-center justify-center gap-2 text-sm mb-3">
-          <span className="text-primary font-medium">
+          <span className="text-gold-600 font-semibold">
             {formatTime(currentTime)}
           </span>
-          <span className="text-white/40">/</span>
-          <span className="text-white/60">{formatTime(duration)}</span>
-          <span className="text-white/40 text-xs">
+          <span className="text-cream-500">/</span>
+          <span className="text-cream-600">{formatTime(duration)}</span>
+          <span className="text-cream-500 text-xs">
             ({Math.round(progress)}%)
           </span>
         </div>
@@ -149,11 +158,15 @@ function FullPlayerView() {
         )}
 
         {/* Error message */}
-        {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
+        {error && (
+          <p className="text-red-500 bg-red-50 px-4 py-2 rounded-lg text-sm mb-4 animate-shake">
+            {error}
+          </p>
+        )}
       </div>
 
       {/* Controls */}
-      <div className="px-6 pb-8">
+      <div className="px-6 pb-8 bg-cream-50 rounded-t-3xl shadow-soft-player pt-6">
         {/* Enhanced Progress bar */}
         <div className="mb-4">
           <ProgressBar
@@ -164,99 +177,89 @@ function FullPlayerView() {
             showTooltip={true}
             showKnob={true}
           />
-          <div className="flex justify-between mt-2 text-sm text-white/60">
+          <div className="flex justify-between mt-2 text-sm text-cream-600">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
         </div>
 
         {/* Main controls */}
-        <div className="flex items-center justify-center gap-8 mb-6">
+        <div className="flex items-center justify-center gap-6 sm:gap-8 mb-6">
           {/* Previous */}
           <button
-            onClick={playPrevious}
-            className="w-12 h-12 flex items-center justify-center touch-target"
+            onClick={() => {
+              hapticLight();
+              playPrevious();
+            }}
+            className="w-12 h-12 flex items-center justify-center rounded-full
+                       bg-cream-200 hover:bg-cream-300 transition-colors touch-target
+                       focus-visible:ring-2 focus-visible:ring-gold-700"
+            aria-label="Bài trước"
           >
-            <svg
-              className="w-8 h-8 text-white"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
-            </svg>
+            <SkipBack className="w-6 h-6 text-cream-800 fill-cream-800" />
           </button>
 
           {/* Rewind 10s */}
           <button
-            onClick={() => seekBy(-10)}
-            className="w-10 h-10 flex items-center justify-center touch-target"
+            onClick={() => {
+              hapticLight();
+              seekBy(-10);
+            }}
+            className="w-10 h-10 flex items-center justify-center rounded-full
+                       bg-cream-200 hover:bg-cream-300 transition-colors touch-target
+                       focus-visible:ring-2 focus-visible:ring-gold-700"
+            aria-label="Lùi 10 giây"
           >
-            <svg
-              className="w-6 h-6 text-white"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z" />
-            </svg>
+            <Rewind className="w-5 h-5 text-cream-700" />
           </button>
 
-          {/* Play/Pause */}
+          {/* Play/Pause - 3D Gold */}
           <button
-            onClick={toggle}
+            onClick={handleToggle}
             disabled={isLoading}
-            className="w-16 h-16 flex items-center justify-center bg-gradient-primary rounded-full shadow-lg active:scale-95 transition-transform touch-target"
+            className={`w-16 h-16 sm:w-18 sm:h-18 flex items-center justify-center 
+                       btn-gold-3d touch-target ripple-container
+                       ${isPlaying ? "animate-pulse-gold" : ""}`}
+            aria-label={isPlaying ? "Tạm dừng" : "Phát"}
           >
             {isPlaying ? (
-              <svg
-                className="w-8 h-8 text-white"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <rect x="6" y="4" width="4" height="16" rx="1" />
-                <rect x="14" y="4" width="4" height="16" rx="1" />
-              </svg>
+              <Pause className="w-7 h-7 sm:w-8 sm:h-8 text-white fill-white" />
             ) : (
-              <svg
-                className="w-8 h-8 text-white ml-1"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M8 5v14l11-7z" />
-              </svg>
+              <Play className="w-7 h-7 sm:w-8 sm:h-8 text-white fill-white ml-1" />
             )}
           </button>
 
           {/* Forward 30s */}
           <button
-            onClick={() => seekBy(30)}
-            className="w-10 h-10 flex items-center justify-center touch-target"
+            onClick={() => {
+              hapticLight();
+              seekBy(30);
+            }}
+            className="w-10 h-10 flex items-center justify-center rounded-full
+                       bg-cream-200 hover:bg-cream-300 transition-colors touch-target
+                       focus-visible:ring-2 focus-visible:ring-gold-700"
+            aria-label="Tiến 30 giây"
           >
-            <svg
-              className="w-6 h-6 text-white"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z" />
-            </svg>
+            <FastForward className="w-5 h-5 text-cream-700" />
           </button>
 
           {/* Next */}
           <button
-            onClick={playNext}
-            className="w-12 h-12 flex items-center justify-center touch-target"
+            onClick={() => {
+              hapticLight();
+              playNext();
+            }}
+            className="w-12 h-12 flex items-center justify-center rounded-full
+                       bg-cream-200 hover:bg-cream-300 transition-colors touch-target
+                       focus-visible:ring-2 focus-visible:ring-gold-700"
+            aria-label="Bài tiếp"
           >
-            <svg
-              className="w-8 h-8 text-white"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
-            </svg>
+            <SkipForward className="w-6 h-6 text-cream-800 fill-cream-800" />
           </button>
         </div>
 
         {/* Secondary controls */}
-        <div className="flex items-center justify-between px-4">
+        <div className="flex items-center justify-between px-2">
           {/* Advanced controls - left side */}
           <div className="flex items-center gap-2">
             <ShuffleButton size="sm" />
@@ -268,10 +271,12 @@ function FullPlayerView() {
           <select
             value={playbackSpeed}
             onChange={(e) => setSpeed(parseFloat(e.target.value))}
-            className="bg-white/10 text-white text-sm px-3 py-2 rounded-lg touch-target"
+            className="bg-cream-200 text-cream-800 text-sm px-3 py-2 rounded-lg 
+                       border border-cream-400/50 touch-target
+                       focus:ring-2 focus:ring-gold-400"
           >
             {speedOptions.map((speed) => (
-              <option key={speed} value={speed} className="bg-dark-800">
+              <option key={speed} value={speed} className="bg-cream-50">
                 {speed}x
               </option>
             ))}
@@ -283,35 +288,30 @@ function FullPlayerView() {
             <button
               onClick={() => setShowVisualizer(!showVisualizer)}
               className={`
-                w-8 h-8 flex items-center justify-center rounded-full transition-all
+                w-9 h-9 flex items-center justify-center rounded-full transition-all touch-target
+                focus-visible:ring-2 focus-visible:ring-gold-700
                 ${
                   showVisualizer
-                    ? "bg-primary/20 text-primary"
-                    : "bg-white/10 text-white/60"
+                    ? "bg-gold-400 text-white shadow-soft-3d-sm"
+                    : "bg-cream-200 text-cream-600 hover:bg-cream-300"
                 }
               `}
-              title={showVisualizer ? "Hide visualizer" : "Show visualizer"}
+              aria-label={showVisualizer ? "Ẩn visualizer" : "Hiện visualizer"}
             >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M3 17V7h2v10H3zm4-4v-2h2v2H7zm4 4V7h2v10h-2zm4-8v2h2V9h-2zm0 4v4h2v-4h-2zm4-6v10h2V7h-2z" />
-              </svg>
+              <BarChart3 className="w-4 h-4" />
             </button>
 
             {/* Volume */}
-            <svg
-              className="w-5 h-5 text-white/60"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-            </svg>
+            <Volume2 className="w-5 h-5 text-cream-600" />
             <input
               type="range"
               min="0"
               max="100"
               value={volume}
               onChange={handleVolumeChange}
-              className="w-16 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
+              className="w-16 h-2 bg-cream-300 rounded-lg appearance-none cursor-pointer
+                         accent-gold-400"
+              aria-label="Âm lượng"
             />
           </div>
         </div>

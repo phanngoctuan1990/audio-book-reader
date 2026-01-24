@@ -1,5 +1,6 @@
 import { usePlayer } from "../../contexts/PlayerContext";
 import { usePlaylist } from "../../contexts/PlaylistContext";
+import { Plus, Play, Pause } from "lucide-react";
 import { formatDuration } from "../../utils/formatters";
 import LoadingSkeleton from "../common/LoadingSkeleton";
 import SearchResultCard from "./SearchResultCard";
@@ -77,14 +78,13 @@ function SearchResults({
   // Error state
   if (error) {
     return (
-      <div className="mt-4 bg-dark-800 rounded-2xl p-6 text-center">
+      <div className="mt-4 bg-cream-50 rounded-2xl p-6 text-center shadow-soft-card border border-cream-400/30">
         <span className="text-4xl mb-3 block">⚠️</span>
-        <h3 className="text-white font-semibold mb-2">Có lỗi xảy ra</h3>
-        <p className="text-white/60 text-sm mb-4">{error}</p>
+        <h3 className="text-cream-900 font-semibold mb-2">Có lỗi xảy ra</h3>
+        <p className="text-cream-600 text-sm mb-4">{error}</p>
         <button
           onClick={onRetry}
-          className="px-6 py-2 bg-gradient-primary text-white rounded-xl 
-                     font-medium active:scale-95 transition-transform"
+          className="px-6 py-2.5 btn-gold-3d font-medium min-h-[44px]"
         >
           Thử lại
         </button>
@@ -95,12 +95,12 @@ function SearchResults({
   // Empty state (searched but no results)
   if (hasSearched && results.length === 0) {
     return (
-      <div className="mt-4 bg-dark-800 rounded-2xl p-6 text-center">
+      <div className="mt-4 bg-cream-50 rounded-2xl p-6 text-center shadow-soft-card border border-cream-400/30">
         <span className="text-4xl mb-3 block">🔍</span>
-        <h3 className="text-white font-semibold mb-2">
+        <h3 className="text-cream-900 font-semibold mb-2">
           Không tìm thấy kết quả
         </h3>
-        <p className="text-white/60 text-sm">Thử tìm với từ khóa khác</p>
+        <p className="text-cream-600 text-sm">Thử tìm với từ khóa khác</p>
       </div>
     );
   }
@@ -138,23 +138,29 @@ function SearchResults({
     <div className="mt-4 space-y-3">
       {/* Header with results count and view toggle */}
       <div className="flex items-center justify-between">
-        <p className="text-white/60 text-sm">Tìm thấy {resultCount} kết quả</p>
+        <p className="text-cream-600 text-sm">Tìm thấy {resultCount} kết quả</p>
         {onViewModeChange && (
           <ViewModeToggle mode={viewMode} onChange={onViewModeChange} />
         )}
       </div>
 
-      {/* Grid View */}
+      {/* Grid View - Responsive columns with stagger animation */}
       {viewMode === "grid" ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {results.map((item) => (
-            <SearchResultCard key={item.videoId} result={item} />
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+          {results.map((item, index) => (
+            <div
+              key={item.videoId}
+              className="animate-slide-up"
+              style={{ animationDelay: `${Math.min(index * 50, 400)}ms` }}
+            >
+              <SearchResultCard result={item} />
+            </div>
           ))}
         </div>
       ) : (
-        /* List View */
-        <div className="space-y-2">
-          {results.map((item) => {
+        /* List View with stagger animation */
+        <div className="space-y-2 sm:space-y-3">
+          {results.map((item, index) => {
             const isCurrentlyPlaying = currentTrack?.videoId === item.videoId;
 
             return (
@@ -162,38 +168,40 @@ function SearchResults({
                 key={item.videoId}
                 onClick={() => handlePlay(item)}
                 className={`
-                  w-full flex items-start gap-3 p-3 rounded-xl
-                  text-left transition-all duration-200
-                  active:scale-[0.98]
+                  w-full flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl
+                  text-left transition-all duration-200 animate-slide-up
+                  active:scale-[0.98] hover:shadow-soft-card-hover card-lift
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-700
                   ${
                     isCurrentlyPlaying
-                      ? "bg-primary/20 border border-primary/50"
-                      : "bg-dark-800 hover:bg-dark-700 border border-transparent"
+                      ? "bg-gold-100 border border-gold-400/50 glow-gold"
+                      : "bg-cream-50 hover:bg-cream-100 border border-cream-400/30"
                   }
                 `}
+                style={{ animationDelay: `${Math.min(index * 50, 400)}ms` }}
               >
                 {/* Thumbnail */}
                 <div className="relative flex-shrink-0">
                   <img
                     src={item.thumbnail}
                     alt={item.title}
-                    className="w-20 h-20 rounded-lg object-cover bg-dark-700"
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover bg-cream-200"
                     loading="lazy"
                   />
                   {/* Duration badge */}
                   {item.duration > 0 && (
-                    <span className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded">
+                    <span className="absolute bottom-1 right-1 bg-cream-900/80 text-white text-xs px-1.5 py-0.5 rounded">
                       {formatDuration(item.duration)}
                     </span>
                   )}
                   {/* Playing indicator */}
                   {isCurrentlyPlaying && (
-                    <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center">
+                    <div className="absolute inset-0 bg-cream-900/40 rounded-xl flex items-center justify-center">
                       <div className="audio-wave flex gap-0.5 h-4">
-                        <span className="w-1 bg-primary rounded-full" />
-                        <span className="w-1 bg-primary rounded-full" />
-                        <span className="w-1 bg-primary rounded-full" />
-                        <span className="w-1 bg-primary rounded-full" />
+                        <span className="w-1 bg-gold-400 rounded-full" />
+                        <span className="w-1 bg-gold-400 rounded-full" />
+                        <span className="w-1 bg-gold-400 rounded-full" />
+                        <span className="w-1 bg-gold-400 rounded-full" />
                       </div>
                     </div>
                   )}
@@ -202,80 +210,59 @@ function SearchResults({
                 {/* Content */}
                 <div className="flex-1 min-w-0 py-0.5">
                   <h3
-                    className={`font-medium text-sm leading-snug line-clamp-2 ${isCurrentlyPlaying ? "text-primary" : "text-white"}`}
+                    className={`font-semibold text-sm sm:text-base leading-snug line-clamp-2 ${isCurrentlyPlaying ? "text-gold-700" : "text-cream-900"}`}
                   >
                     {item.title}
                   </h3>
-                  <p className="text-white/60 text-xs mt-1 truncate">
+                  <p className="text-cream-600 text-xs sm:text-sm mt-1 truncate">
                     {item.author}
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-white/40 mt-0.5">
+                  <div className="flex items-center gap-2 text-xs text-cream-500 mt-0.5">
                     <span>{formatDuration(item.duration)}</span>
                     <span>•</span>
                     <span>~{estimateFileSize(item.duration)}</span>
                     {item.views > 0 && (
                       <>
-                        <span>•</span>
-                        <span>{formatViews(item.views)} lượt xem</span>
+                        <span className="hidden sm:inline">•</span>
+                        <span className="hidden sm:inline">
+                          {formatViews(item.views)} lượt xem
+                        </span>
                       </>
                     )}
                   </div>
                 </div>
 
                 {/* Play icon */}
-                <div className="flex-shrink-0 self-center flex items-center gap-1">
+                <div className="flex-shrink-0 self-center flex items-center gap-1 sm:gap-2">
                   {/* Add to playlist button */}
                   <button
                     onClick={(e) => handleAddToPlaylist(e, item)}
-                    className="w-9 h-9 rounded-full flex items-center justify-center
-                             text-white/40 hover:text-primary hover:bg-primary/10
-                             transition-colors"
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center
+                             text-cream-500 hover:text-gold-600 hover:bg-gold-100
+                             transition-colors min-h-[44px] min-w-[44px]
+                             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-700"
                     title="Thêm vào playlist"
+                    aria-label="Thêm vào playlist"
                   >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
+                    <Plus className="w-5 h-5" />
                   </button>
 
                   {/* Play button */}
                   <div
                     className={`
-                  w-10 h-10 rounded-full flex items-center justify-center
+                  w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center
                   ${
                     isCurrentlyPlaying
-                      ? "bg-primary text-white"
-                      : "bg-white/10 text-white/60 hover:text-white hover:bg-white/20"
+                      ? "bg-gold-400 text-white shadow-soft-3d-sm"
+                      : "bg-cream-200 text-cream-600 hover:text-cream-800 hover:bg-cream-300"
                   }
-                  transition-colors
+                  transition-all
                 `}
                   >
                     {isCurrentlyPlaying ? (
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <rect x="6" y="4" width="4" height="16" rx="1" />
-                        <rect x="14" y="4" width="4" height="16" rx="1" />
-                      </svg>
+                      <Pause className="w-4 h-4 sm:w-5 sm:h-5 fill-white" />
                     ) : (
-                      <svg
-                        className="w-4 h-4 ml-0.5"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
+                      <Play className="w-4 h-4 sm:w-5 sm:h-5 ml-0.5 fill-current" />
                     )}
                   </div>
                 </div>

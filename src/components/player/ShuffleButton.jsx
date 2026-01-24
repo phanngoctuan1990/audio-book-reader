@@ -1,8 +1,11 @@
 /**
  * ShuffleButton Component
  * Toggles shuffle mode for the queue
+ * Soft Gold theme
  */
+import { Shuffle } from "lucide-react";
 import { usePlayer } from "../../contexts/PlayerContext";
+import { hapticLight } from "../../utils/haptics";
 
 function ShuffleButton({ size = "md" }) {
   const { isShuffled, toggleShuffle, queue } = usePlayer();
@@ -22,31 +25,35 @@ function ShuffleButton({ size = "md" }) {
   // Disable if no queue or only one track
   const isDisabled = queue.length <= 1;
 
+  const handleClick = () => {
+    hapticLight();
+    toggleShuffle();
+  };
+
   return (
     <button
-      onClick={toggleShuffle}
+      onClick={handleClick}
       disabled={isDisabled}
       className={`
         ${sizeClasses[size]} flex items-center justify-center
         rounded-full transition-all active:scale-95 touch-target relative
+        focus-visible:ring-2 focus-visible:ring-gold-700
         ${
           isDisabled
-            ? "opacity-30 cursor-not-allowed"
+            ? "opacity-30 cursor-not-allowed bg-cream-200 text-cream-500"
             : isShuffled
-              ? "bg-primary/20 text-primary"
-              : "bg-white/10 text-white/60 hover:text-white hover:bg-white/20"
+              ? "bg-gold-400/20 text-gold-600"
+              : "bg-cream-200 text-cream-600 hover:text-cream-800 hover:bg-cream-300"
         }
       `}
       aria-label={isShuffled ? "Shuffle on" : "Shuffle off"}
       title={isShuffled ? "Shuffle: On" : "Shuffle: Off"}
     >
-      <svg className={iconSizes[size]} fill="currentColor" viewBox="0 0 24 24">
-        <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z" />
-      </svg>
+      <Shuffle className={iconSizes[size]} />
 
       {/* Active indicator dot */}
       {isShuffled && !isDisabled && (
-        <span className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-primary" />
+        <span className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-gold-500" />
       )}
     </button>
   );

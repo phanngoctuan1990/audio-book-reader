@@ -34,9 +34,27 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-900 pb-32">
-      {/* Main Content */}
-      <main className="pt-safe">{renderPage()}</main>
+    <div className="min-h-screen bg-cream-200 text-cream-800">
+      {/* Skip to main content target */}
+      <a id="main-content" className="sr-only" aria-hidden="true" />
+
+      {/* Desktop Layout Container */}
+      <div className="lg:flex lg:max-w-7xl lg:mx-auto">
+        {/* Desktop Side Navigation */}
+        <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:left-0 lg:top-0 lg:h-full lg:bg-cream-50 lg:border-r lg:border-cream-400/30 lg:p-6 lg:shadow-soft-card">
+          <div className="mb-8">
+            <h1 className="text-xl font-bold text-cream-900 flex items-center gap-2">
+              📚 Bookshelf
+            </h1>
+          </div>
+          <DesktopNav currentPage={currentPage} onNavigate={setCurrentPage} />
+        </aside>
+
+        {/* Main Content */}
+        <main className="pt-safe pb-32 lg:pb-8 lg:ml-64 lg:flex-1">
+          {renderPage()}
+        </main>
+      </div>
 
       {/* Enhanced Mini Player (when playing) */}
       <EnhancedMiniPlayer />
@@ -44,8 +62,10 @@ function AppContent() {
       {/* Full Player View (when expanded) */}
       {isPlayerExpanded && <FullPlayerView />}
 
-      {/* Bottom Navigation */}
-      <BottomNav currentPage={currentPage} onNavigate={setCurrentPage} />
+      {/* Bottom Navigation - Mobile/Tablet only */}
+      <div className="lg:hidden">
+        <BottomNav currentPage={currentPage} onNavigate={setCurrentPage} />
+      </div>
 
       {/* PWA Install Banner */}
       <InstallBanner />
@@ -56,6 +76,55 @@ function AppContent() {
       {/* Background Playback Info Modal */}
       <BackgroundPlaybackInfo />
     </div>
+  );
+}
+
+/**
+ * Desktop Side Navigation Component
+ */
+import {
+  Home as HomeIcon,
+  Radio as RadioIcon,
+  Library as LibraryIcon,
+  Heart,
+} from "lucide-react";
+
+function DesktopNav({ currentPage, onNavigate }) {
+  const navItems = [
+    { id: "home", icon: HomeIcon, label: "Trang chủ" },
+    { id: "radio", icon: RadioIcon, label: "Radio" },
+    { id: "library", icon: LibraryIcon, label: "Thư viện" },
+    { id: "favorites", icon: Heart, label: "Yêu thích" },
+  ];
+
+  return (
+    <nav className="flex flex-col gap-2">
+      {navItems.map((item) => {
+        const isActive = currentPage === item.id;
+        const IconComponent = item.icon;
+
+        return (
+          <button
+            key={item.id}
+            onClick={() => onNavigate(item.id)}
+            className={`
+              flex items-center gap-3 px-4 py-3 rounded-xl font-medium
+              transition-all duration-200
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-700
+              ${
+                isActive
+                  ? "bg-gold-400 text-white shadow-soft-3d-sm"
+                  : "text-cream-700 hover:bg-cream-200 hover:text-cream-900"
+              }
+            `}
+            aria-current={isActive ? "page" : undefined}
+          >
+            <IconComponent className="w-5 h-5" />
+            <span>{item.label}</span>
+          </button>
+        );
+      })}
+    </nav>
   );
 }
 

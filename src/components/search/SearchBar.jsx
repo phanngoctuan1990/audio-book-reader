@@ -1,8 +1,9 @@
 import { useRef, useEffect, useCallback } from "react";
+import { Search, Link, X } from "lucide-react";
 import { isYouTubeUrl } from "../../hooks/useSearch";
 
 /**
- * SearchBar component with debounce, clear button, and URL paste support
+ * SearchBar component with Soft Gold theme, debounce, clear button, and URL paste support
  */
 function SearchBar({
   value,
@@ -54,8 +55,12 @@ function SearchBar({
   return (
     <div className="relative">
       {/* Search/URL icon */}
-      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 text-lg pointer-events-none">
-        {inputMode === "url" ? "🔗" : "🔍"}
+      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cream-600 pointer-events-none">
+        {inputMode === "url" ? (
+          <Link className="w-5 h-5" />
+        ) : (
+          <Search className="w-5 h-5" />
+        )}
       </span>
 
       {/* Input */}
@@ -67,25 +72,26 @@ function SearchBar({
         onPaste={handlePaste}
         placeholder={getPlaceholder()}
         className={`
-          w-full bg-dark-700 text-white placeholder-white/40 
-          rounded-2xl px-5 py-4 pl-12 pr-12
-          border transition-colors text-base
-          focus:outline-none
+          w-full bg-cream-300/50 text-cream-800 placeholder-cream-600
+          rounded-full px-5 py-4 pl-12 pr-12
+          border transition-all duration-200 text-base
+          focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-cream-200
           ${
             inputMode === "url"
-              ? "border-accent-purple focus:border-accent-purple"
-              : "border-white/10 focus:border-primary"
+              ? "border-gold-400 focus:ring-gold-400 bg-gold-50"
+              : "border-cream-400/50 focus:ring-gold-400 focus:border-gold-400"
           }
         `}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck="false"
+        aria-label="Tìm kiếm sách nói"
       />
 
       {/* URL mode indicator */}
       {inputMode === "url" && (
-        <span className="absolute left-12 top-1/2 -translate-y-1/2 text-xs text-accent-purple font-medium">
+        <span className="absolute left-12 top-1/2 -translate-y-1/2 text-xs text-gold-600 font-semibold">
           URL
         </span>
       )}
@@ -94,30 +100,19 @@ function SearchBar({
       <div className="absolute right-3 top-1/2 -translate-y-1/2">
         {isLoading ? (
           <div className="w-6 h-6 flex items-center justify-center">
-            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-gold-400 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : value ? (
           <button
             onClick={handleClear}
-            className="w-8 h-8 flex items-center justify-center 
-                       text-white/40 hover:text-white/80 
-                       rounded-full hover:bg-white/10
-                       transition-colors touch-target"
+            className="w-10 h-10 flex items-center justify-center 
+                       text-cream-600 hover:text-cream-800 
+                       rounded-full hover:bg-cream-300/50
+                       transition-colors min-h-[44px] min-w-[44px]
+                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-700"
             aria-label="Xóa tìm kiếm"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <X className="w-5 h-5" />
           </button>
         ) : null}
       </div>

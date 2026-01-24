@@ -1,8 +1,9 @@
 /**
  * SearchFilters Component
- * Advanced search filters for duration, upload date, and sort options
+ * Advanced search filters for duration, upload date, and sort options - Soft Gold theme
  */
 import { useState } from "react";
+import { SlidersHorizontal, ChevronDown } from "lucide-react";
 
 const FILTER_OPTIONS = {
   duration: [
@@ -41,49 +42,33 @@ function SearchFilters({ filters, onFilterChange, onReset }) {
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className={`
-          flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all
+          flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all
+          min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-700
           ${
             hasActiveFilters
-              ? "bg-primary/20 text-primary"
-              : "bg-dark-800 text-white/60 hover:text-white"
+              ? "bg-gold-100 text-gold-700 border border-gold-400"
+              : "bg-cream-300/50 text-cream-700 hover:text-cream-800 hover:bg-cream-300"
           }
         `}
+        aria-expanded={isExpanded}
+        aria-controls="filter-panel"
       >
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-          />
-        </svg>
+        <SlidersHorizontal className="w-4 h-4" />
         Bộ lọc
         {hasActiveFilters && (
-          <span className="w-2 h-2 rounded-full bg-primary" />
+          <span className="w-2 h-2 rounded-full bg-gold-400" />
         )}
-        <svg
+        <ChevronDown
           className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
+        />
       </button>
 
       {/* Filter panel */}
       {isExpanded && (
-        <div className="mt-3 p-4 bg-dark-800 rounded-xl space-y-4 animate-fadeIn">
+        <div
+          id="filter-panel"
+          className="mt-3 p-4 bg-cream-50 rounded-2xl space-y-4 animate-fade-in shadow-soft-card border border-cream-400/30"
+        >
           {/* Duration filter */}
           <FilterGroup
             label="Thời lượng"
@@ -112,7 +97,9 @@ function SearchFilters({ filters, onFilterChange, onReset }) {
           {hasActiveFilters && (
             <button
               onClick={onReset}
-              className="w-full py-2 text-sm text-white/60 hover:text-white transition-colors"
+              className="w-full py-2.5 text-sm text-cream-700 hover:text-gold-600 
+                         transition-colors rounded-lg hover:bg-cream-200
+                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-700"
             >
               Xóa tất cả bộ lọc
             </button>
@@ -124,25 +111,29 @@ function SearchFilters({ filters, onFilterChange, onReset }) {
 }
 
 /**
- * Individual filter group with label and options
+ * Individual filter group with label and options - Soft Gold theme
  */
 function FilterGroup({ label, options, value, onChange }) {
   return (
     <div>
-      <label className="block text-xs text-white/40 mb-2">{label}</label>
-      <div className="flex flex-wrap gap-2">
+      <label className="block text-xs text-cream-600 font-medium mb-2">
+        {label}
+      </label>
+      <div className="flex flex-wrap gap-2" role="group" aria-label={label}>
         {options.map((option) => (
           <button
             key={option.value}
             onClick={() => onChange(option.value)}
             className={`
-              px-3 py-1.5 rounded-full text-sm transition-all
+              px-3 py-1.5 rounded-full text-sm transition-all min-h-[36px]
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-700
               ${
                 value === option.value
-                  ? "bg-primary text-white"
-                  : "bg-dark-700 text-white/60 hover:text-white hover:bg-dark-600"
+                  ? "bg-gold-400 text-white shadow-soft-3d-sm"
+                  : "bg-cream-200 text-cream-700 hover:text-cream-800 hover:bg-cream-300"
               }
             `}
+            aria-pressed={value === option.value}
           >
             {option.label}
           </button>

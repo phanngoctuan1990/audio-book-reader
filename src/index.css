@@ -2,21 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-/* iOS Safe Area */
+/* ========== CSS CUSTOM PROPERTIES ========== */
 :root {
+  /* Safe areas */
   --sat: env(safe-area-inset-top);
   --sab: env(safe-area-inset-bottom);
   --sal: env(safe-area-inset-left);
   --sar: env(safe-area-inset-right);
+  
+  /* Soft Gold Theme Colors */
+  --color-cream: #F8F5F0;
+  --color-cream-light: #FCFAF7;
+  --color-cream-dark: #F0EBE3;
+  --color-gold: #E6C785;
+  --color-gold-light: #FFF3DA;
+  --color-gold-dark: #C7A660;
+  --color-text-primary: #4A4035;
+  --color-text-secondary: #8C857B;
+  --color-border: #E8E4DE;
+  
+  /* Accessible colors (WCAG AA compliant) */
+  --color-text-accessible: #3D3428; /* 7:1 contrast on cream */
+  --color-text-secondary-accessible: #5C5447; /* 4.5:1 contrast */
+  --color-gold-accessible: #9A7B35; /* 4.5:1 for white text */
+  --color-focus: #B08940; /* Visible focus ring */
+  
+  /* Soft 3D Shadows */
+  --shadow-soft-3d: 4px 4px 8px #d1c9b8, -4px -4px 8px #ffffff;
+  --shadow-soft-3d-sm: 2px 2px 4px #d1c9b8, -2px -2px 4px #ffffff;
+  --shadow-soft-3d-inset: inset 2px 2px 4px #d1c9b8, inset -2px -2px 4px #ffffff;
+  
+  /* Transitions */
+  --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  /* Animation durations (can be overridden for reduced motion) */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
 }
 
-/* Base Styles */
+/* ========== BASE STYLES ========== */
 body {
-  @apply bg-dark-900 text-white antialiased;
-  font-family: 'Inter', system-ui, sans-serif;
+  @apply bg-cream-200 text-cream-800 antialiased;
+  font-family: 'Nunito', 'Poppins', 'Inter', system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   user-select: none;
+}
+
+/* Legacy dark theme support (for gradual migration) */
+body.theme-dark {
+  @apply bg-dark-900 text-white;
 }
 
 /* Hide scrollbar but keep functionality */
@@ -78,14 +115,14 @@ body {
   animation: shimmer 1.5s infinite;
 }
 
-/* Glow effect for playing */
+/* Glow effect for playing - Gold theme */
 .glow {
-  box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 30px rgba(230, 199, 133, 0.4);
 }
 
 /* Smaller glow for mini player */
 .glow-sm {
-  box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 15px rgba(230, 199, 133, 0.3);
 }
 
 /* Playing animation - bouncing bars */
@@ -136,4 +173,370 @@ body {
 
 .pb-safe {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* ========== SOFT UI COMPONENTS ========== */
+
+/* Soft 3D Button (Neumorphism) */
+.btn-soft-3d {
+  @apply bg-cream-200 rounded-full transition-all duration-200;
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-700;
+  @apply focus-visible:ring-offset-2 focus-visible:ring-offset-cream-200;
+  box-shadow: var(--shadow-soft-3d);
+}
+
+.btn-soft-3d:hover {
+  box-shadow: 6px 6px 12px #d1c9b8, -6px -6px 12px #ffffff;
+}
+
+.btn-soft-3d:active {
+  box-shadow: var(--shadow-soft-3d-inset);
+}
+
+/* Gold 3D Button */
+.btn-gold-3d {
+  @apply bg-gold-400 text-white rounded-full transition-all duration-200;
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-700;
+  @apply focus-visible:ring-offset-2 focus-visible:ring-offset-cream-200;
+  box-shadow: var(--shadow-soft-3d);
+}
+
+.btn-gold-3d:hover {
+  @apply bg-gold-500;
+  box-shadow: 6px 6px 12px #d1c9b8, -6px -6px 12px #ffffff;
+}
+
+.btn-gold-3d:active {
+  @apply bg-gold-600;
+  box-shadow: var(--shadow-soft-3d-inset);
+  transform: scale(0.98);
+}
+
+/* Soft Card */
+.card-soft {
+  @apply bg-cream-50 rounded-2xl transition-all duration-200;
+  @apply focus-within:ring-2 focus-within:ring-gold-400 focus-within:ring-offset-2;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.card-soft:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Filter Pill */
+.pill-filter {
+  @apply px-4 py-2 rounded-full text-sm font-medium transition-all duration-200;
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-700;
+  @apply focus-visible:ring-offset-2 focus-visible:ring-offset-cream-200;
+  @apply min-h-[44px]; /* Touch target */
+}
+
+.pill-filter.active {
+  @apply bg-gold-400 text-white;
+}
+
+.pill-filter:not(.active) {
+  @apply bg-transparent text-cream-700 hover:bg-cream-300;
+}
+
+/* Skeleton loader - Gold theme */
+.skeleton-gold {
+  @apply rounded-xl;
+  background: linear-gradient(
+    90deg,
+    rgba(230, 199, 133, 0.1) 25%,
+    rgba(230, 199, 133, 0.2) 50%,
+    rgba(230, 199, 133, 0.1) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Glass morphism - Cream theme */
+.glass-cream {
+  @apply bg-cream-50/80 backdrop-blur-lg border border-cream-400/30;
+}
+
+/* Focus ring for accessibility */
+.focus-ring {
+  @apply focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-200 focus-visible:outline-none;
+}
+
+/* Gradient backgrounds - Gold theme */
+.bg-gradient-gold {
+  @apply bg-gradient-to-r from-gold-400 to-gold-500;
+}
+
+.bg-gradient-gold-soft {
+  @apply bg-gradient-to-br from-gold-100 to-cream-200;
+}
+
+/* ========== ACCESSIBILITY UTILITIES ========== */
+
+/* Skip to main content link */
+.skip-link {
+  @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100];
+  @apply bg-gold-400 text-white px-4 py-2 rounded-lg font-semibold;
+  @apply focus-visible:ring-2 focus-visible:ring-gold-700 focus-visible:ring-offset-2;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  :root {
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-text-primary: #000000;
+    --color-text-secondary: #333333;
+    --color-gold: #9A7B35;
+    --shadow-soft-3d: 0 0 0 2px #000000;
+  }
+  
+  .btn-gold-3d,
+  .pill-filter.active {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Accessible focus states for all interactive elements */
+.focus-accessible {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-700;
+  @apply focus-visible:ring-offset-2 focus-visible:ring-offset-cream-200;
+}
+
+/* Touch target minimum size (WCAG 2.1) */
+.touch-target-min {
+  @apply min-h-[44px] min-w-[44px];
+  @apply flex items-center justify-center;
+}
+
+/* Screen reader only - enhanced */
+.sr-only-focusable:not(:focus):not(:focus-within) {
+  @apply sr-only;
+}
+
+/* Visible focus indicator */
+.focus-indicator {
+  @apply relative;
+}
+
+.focus-indicator::after {
+  content: '';
+  @apply absolute inset-0 pointer-events-none;
+  @apply ring-2 ring-gold-700 ring-offset-2 ring-offset-cream-200;
+  @apply opacity-0 transition-opacity duration-150;
+  border-radius: inherit;
+}
+
+.focus-indicator:focus-visible::after {
+  @apply opacity-100;
+}
+
+/* ========== ANIMATIONS & MICRO-INTERACTIONS ========== */
+
+/* Ripple effect for buttons */
+.ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+  animation: ripple 0.6s linear forwards;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Button press animation */
+.btn-press {
+  @apply transition-all duration-150;
+  @apply active:scale-[0.97] active:brightness-95;
+}
+
+/* Card hover lift effect */
+.card-lift {
+  @apply transition-all duration-300;
+}
+
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Interactive element with bounce */
+.interactive-bounce {
+  @apply transition-transform duration-200;
+}
+
+.interactive-bounce:active {
+  animation: bounceSoft 0.6s ease-out;
+}
+
+@keyframes bounceSoft {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  75% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+/* Playing bars animation */
+.playing-bars {
+  @apply flex items-end gap-0.5;
+}
+
+.playing-bars .bar {
+  @apply w-0.5 bg-current rounded-full;
+  animation: barBounce 1.2s ease-in-out infinite;
+}
+
+.playing-bars .bar:nth-child(1) { animation-delay: 0s; }
+.playing-bars .bar:nth-child(2) { animation-delay: 0.2s; }
+.playing-bars .bar:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes barBounce {
+  0%, 80%, 100% { 
+    height: 4px; 
+    opacity: 0.7;
+  }
+  40% { 
+    height: 16px; 
+    opacity: 1;
+  }
+}
+
+/* Progress bar smooth transition */
+.progress-smooth {
+  @apply transition-all duration-150 ease-out;
+}
+
+/* Slider thumb animation */
+.slider-thumb-pulse {
+  @apply transition-transform duration-200;
+}
+
+.slider-thumb-pulse:active {
+  @apply scale-125;
+}
+
+/* Hover scale effect */
+.hover-scale {
+  @apply transition-transform duration-200;
+}
+
+.hover-scale:hover {
+  @apply scale-[1.02];
+}
+
+.hover-scale:active {
+  @apply scale-[0.98];
+}
+
+/* Stagger animation for lists */
+.stagger-item {
+  @apply opacity-0 animate-slide-up;
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0ms; }
+.stagger-item:nth-child(2) { animation-delay: 50ms; }
+.stagger-item:nth-child(3) { animation-delay: 100ms; }
+.stagger-item:nth-child(4) { animation-delay: 150ms; }
+.stagger-item:nth-child(5) { animation-delay: 200ms; }
+.stagger-item:nth-child(6) { animation-delay: 250ms; }
+.stagger-item:nth-child(7) { animation-delay: 300ms; }
+.stagger-item:nth-child(8) { animation-delay: 350ms; }
+
+/* Floating animation for decorative elements */
+.floating {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Glow effect on playing */
+.glow-gold {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(230, 199, 133, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(230, 199, 133, 0.6); }
+}
+
+/* Shake animation for errors */
+.shake {
+  animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+/* Fade slide entrance */
+.fade-slide-enter {
+  @apply animate-fade-in;
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== PERFORMANCE OPTIMIZATIONS ========== */
+
+/* GPU acceleration for animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Contain paint for performance */
+.contain-paint {
+  contain: paint;
+}
+
+/* Content visibility for off-screen content */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
 }

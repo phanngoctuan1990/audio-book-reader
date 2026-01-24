@@ -1,8 +1,11 @@
 /**
  * RepeatButton Component
  * Cycles through repeat modes: none → one → all → none
+ * Soft Gold theme
  */
+import { Repeat, Repeat1 } from "lucide-react";
 import { usePlayer } from "../../contexts/PlayerContext";
+import { hapticLight } from "../../utils/haptics";
 
 function RepeatButton({ size = "md" }) {
   const { repeatMode, cycleRepeatMode } = usePlayer();
@@ -21,34 +24,36 @@ function RepeatButton({ size = "md" }) {
 
   const isActive = repeatMode !== "none";
 
+  const handleClick = () => {
+    hapticLight();
+    cycleRepeatMode();
+  };
+
   return (
     <button
-      onClick={cycleRepeatMode}
+      onClick={handleClick}
       className={`
         ${sizeClasses[size]} flex items-center justify-center
         rounded-full transition-all active:scale-95 touch-target relative
+        focus-visible:ring-2 focus-visible:ring-gold-700
         ${
           isActive
-            ? "bg-primary/20 text-primary"
-            : "bg-white/10 text-white/60 hover:text-white hover:bg-white/20"
+            ? "bg-gold-400/20 text-gold-600"
+            : "bg-cream-200 text-cream-600 hover:text-cream-800 hover:bg-cream-300"
         }
       `}
       aria-label={`Repeat mode: ${repeatMode}`}
       title={`Repeat: ${repeatMode === "none" ? "Off" : repeatMode === "one" ? "One" : "All"}`}
     >
-      <svg className={iconSizes[size]} fill="currentColor" viewBox="0 0 24 24">
-        {repeatMode === "one" ? (
-          // Repeat one icon
-          <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4zm-4-2V9h-1l-2 1v1h1.5v4H13z" />
-        ) : (
-          // Repeat all icon
-          <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" />
-        )}
-      </svg>
+      {repeatMode === "one" ? (
+        <Repeat1 className={iconSizes[size]} />
+      ) : (
+        <Repeat className={iconSizes[size]} />
+      )}
 
       {/* Active indicator dot */}
       {isActive && (
-        <span className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-primary" />
+        <span className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-gold-500" />
       )}
     </button>
   );

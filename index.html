@@ -22,8 +22,8 @@
     />
     <meta name="apple-mobile-web-app-title" content="Vibe Audio" />
 
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#1a1a2e" />
+    <!-- Theme Color - Soft Gold Theme -->
+    <meta name="theme-color" content="#F8F5F0" />
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
@@ -34,15 +34,23 @@
     <!-- iOS Icons -->
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
 
-    <!-- Fonts -->
+    <!-- Fonts - Nunito for Soft UI -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Preload critical font weights -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@600&display=swap"
+      as="style"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
   </head>
   <body>
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="skip-link"> Bỏ qua đến nội dung chính </a>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
 

@@ -1,10 +1,10 @@
 /**
  * EnhancedMiniPlayer Component
- * Enhanced mini player with more info and interactive progress
+ * Enhanced mini player with responsive design and Soft Gold theme
  */
 import { usePlayer } from "../../contexts/PlayerContext";
+import { Play, Pause, SkipForward } from "lucide-react";
 import ProgressBar from "./ProgressBar";
-import TrackInfo from "./TrackInfo";
 import QueueInfo from "./QueueInfo";
 import PlayingAnimation from "./PlayingAnimation";
 
@@ -30,10 +30,14 @@ function EnhancedMiniPlayer() {
   if (!currentTrack) return null;
 
   return (
-    <div className="fixed bottom-16 left-0 right-0 z-30 px-3 pb-2">
-      <div className="enhanced-mini-player glass rounded-2xl overflow-hidden shadow-lg">
+    <div className="fixed bottom-16 sm:bottom-20 lg:bottom-4 left-0 right-0 z-30 px-3 sm:px-4 lg:px-0 pb-2">
+      {/* Responsive container - centered on tablet/desktop */}
+      <div
+        className="enhanced-mini-player bg-cream-50 rounded-2xl overflow-hidden shadow-soft-player border border-cream-400/30
+                      sm:max-w-lg sm:mx-auto lg:max-w-xl lg:ml-72"
+      >
         {/* Progress Bar at top */}
-        <div className="px-3 pt-2">
+        <div className="px-3 sm:px-4 pt-2">
           <ProgressBar
             currentTime={currentTime}
             duration={duration}
@@ -44,8 +48,8 @@ function EnhancedMiniPlayer() {
           />
         </div>
 
-        {/* Main Content */}
-        <div className="player-content p-3">
+        {/* Main Content - responsive padding */}
+        <div className="player-content p-3 sm:p-4">
           <div className="flex items-center gap-3">
             {/* Thumbnail with status */}
             <div
@@ -55,17 +59,17 @@ function EnhancedMiniPlayer() {
               <img
                 src={currentTrack.thumbnail}
                 alt={currentTrack.title}
-                className={`w-14 h-14 rounded-xl object-cover ${isPlaying ? "glow-sm" : ""}`}
+                className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover transition-shadow ${isPlaying ? "shadow-soft-3d" : ""}`}
               />
               {/* Loading spinner */}
               {(isLoading || isBuffering) && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl">
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center bg-cream-900/50 rounded-xl">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-gold-400 border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
               {/* Playing animation */}
               {isPlaying && !isLoading && !isBuffering && (
-                <div className="absolute bottom-1 right-1 p-1 bg-black/60 rounded">
+                <div className="absolute bottom-1 right-1 p-1 bg-cream-900/60 rounded">
                   <PlayingAnimation size="sm" barCount={3} />
                 </div>
               )}
@@ -76,24 +80,24 @@ function EnhancedMiniPlayer() {
               className="flex-1 min-w-0 cursor-pointer"
               onClick={toggleExpanded}
             >
-              <h4 className="text-sm font-medium text-white truncate">
+              <h4 className="text-sm font-semibold text-cream-900 truncate">
                 {currentTrack.title}
               </h4>
-              <p className="text-xs text-white/60 truncate">
+              <p className="text-xs text-cream-600 truncate">
                 {currentTrack.author}
               </p>
               {/* Time and Queue Info */}
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs text-primary">
+                <span className="text-xs text-gold-600 font-medium">
                   {formatTimeCompact(currentTime)}
                 </span>
-                <span className="text-xs text-white/40">/</span>
-                <span className="text-xs text-white/40">
+                <span className="text-xs text-cream-500">/</span>
+                <span className="text-xs text-cream-500">
                   {formatTimeCompact(duration)}
                 </span>
                 {queue.length > 1 && (
                   <>
-                    <span className="text-white/20">•</span>
+                    <span className="text-cream-400">•</span>
                     <QueueInfo
                       queue={queue}
                       currentIndex={queueIndex}
@@ -104,16 +108,14 @@ function EnhancedMiniPlayer() {
               </div>
             </div>
 
-            {/* Status indicators */}
-            <div className="flex items-center gap-1">
-              {/* Repeat indicator */}
+            {/* Status indicators - hidden on small screens */}
+            <div className="hidden sm:flex items-center gap-1">
               {repeatMode !== "none" && (
-                <span className="text-primary text-xs">
+                <span className="text-gold-600 text-xs">
                   {repeatMode === "one" ? "🔂" : "🔁"}
                 </span>
               )}
-              {/* Shuffle indicator */}
-              {isShuffled && <span className="text-primary text-xs">🔀</span>}
+              {isShuffled && <span className="text-gold-600 text-xs">🔀</span>}
             </div>
 
             {/* Next button (if queue) */}
@@ -123,46 +125,30 @@ function EnhancedMiniPlayer() {
                   e.stopPropagation();
                   playNext();
                 }}
-                className="w-9 h-9 flex items-center justify-center rounded-full bg-white/10 active:bg-white/20 transition-colors"
+                className="hidden sm:flex w-10 h-10 items-center justify-center rounded-full 
+                           bg-cream-200 text-cream-700 hover:bg-cream-300 hover:text-cream-900
+                           transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-700"
+                aria-label="Bài tiếp theo"
               >
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
-                </svg>
+                <SkipForward className="w-5 h-5" />
               </button>
             )}
 
-            {/* Play/Pause Button */}
+            {/* Play/Pause Button - 3D gold style */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 toggle();
               }}
               disabled={isLoading}
-              className="w-12 h-12 flex items-center justify-center 
-                         bg-gradient-primary rounded-full
-                         active:scale-95 transition-transform touch-target"
+              className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center 
+                         btn-gold-3d min-h-[44px] min-w-[44px]"
+              aria-label={isPlaying ? "Tạm dừng" : "Phát"}
             >
               {isPlaying ? (
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <rect x="6" y="4" width="4" height="16" rx="1" />
-                  <rect x="14" y="4" width="4" height="16" rx="1" />
-                </svg>
+                <Pause className="w-5 h-5 sm:w-6 sm:h-6 text-white fill-white" />
               ) : (
-                <svg
-                  className="w-5 h-5 text-white ml-0.5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M8 5v14l11-7z" />
-                </svg>
+                <Play className="w-5 h-5 sm:w-6 sm:h-6 text-white fill-white ml-0.5" />
               )}
             </button>
           </div>
