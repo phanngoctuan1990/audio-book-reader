@@ -27,6 +27,14 @@ import {
 } from "../services/youtube";
 import { getAudiobook, updatePlayPosition, addToHistory } from "../services/db";
 import { POSITION_SAVE_INTERVAL } from "../utils/constants";
+import {
+  setupMediaSession,
+  updateMediaSessionState,
+  updateMediaSessionPosition,
+  clearMediaSession,
+} from "../services/mediaSession";
+import { getBackgroundManager } from "../services/backgroundPlayback";
+import { requestWakeLock, releaseWakeLock } from "../services/wakeLock";
 
 const YouTubePlayerContext = createContext(null);
 
@@ -45,6 +53,11 @@ const initialState = {
   queueIndex: 0,
   isPlayerExpanded: false,
   isPlayerReady: false,
+  // Advanced controls
+  repeatMode: "none", // 'none', 'one', 'all'
+  autoPlayNext: true,
+  isShuffled: false,
+  originalQueue: [], // Store original queue for unshuffle
 };
 
 // Action types
@@ -63,6 +76,11 @@ const ACTIONS = {
   TOGGLE_EXPANDED: "TOGGLE_EXPANDED",
   SET_PLAYER_READY: "SET_PLAYER_READY",
   RESET: "RESET",
+  // Advanced controls
+  SET_REPEAT_MODE: "SET_REPEAT_MODE",
+  TOGGLE_AUTO_PLAY: "TOGGLE_AUTO_PLAY",
+  SET_SHUFFLE: "SET_SHUFFLE",
+  SET_ORIGINAL_QUEUE: "SET_ORIGINAL_QUEUE",
 };
 
 function playerReducer(state, action) {
@@ -95,6 +113,15 @@ function playerReducer(state, action) {
       return { ...state, isPlayerReady: action.payload };
     case ACTIONS.RESET:
       return initialState;
+    // Advanced controls
+    case ACTIONS.SET_REPEAT_MODE:
+      return { ...state, repeatMode: action.payload };
+    case ACTIONS.TOGGLE_AUTO_PLAY:
+      return { ...state, autoPlayNext: !state.autoPlayNext };
+    case ACTIONS.SET_SHUFFLE:
+      return { ...state, isShuffled: action.payload };
+    case ACTIONS.SET_ORIGINAL_QUEUE:
+      return { ...state, originalQueue: action.payload };
     default:
       return state;
   }
@@ -106,12 +133,39 @@ export function YouTubePlayerProvider({ children }) {
   const containerIdRef = useRef("youtube-player-container");
   const timeUpdateRef = useRef(null);
   const saveIntervalRef = useRef(null);
+  const backgroundManagerRef = useRef(null);
+
+  // Initialize background manager
+  useEffect(() => {
+    backgroundManagerRef.current = getBackgroundManager();
+
+    return () => {
+      if (backgroundManagerRef.current) {
+        backgroundManagerRef.current.destroy();
+      }
+    };
+  }, []);
 
   // Load saved playback speed
   useEffect(() => {
     const savedSpeed = localStorage.getItem("playbackSpeed");
     if (savedSpeed) {
       dispatch({ type: ACTIONS.SET_SPEED, payload: parseFloat(savedSpeed) });
+    }
+    // Load repeat mode
+    const savedRepeat = localStorage.getItem("repeatMode");
+    if (savedRepeat) {
+      dispatch({ type: ACTIONS.SET_REPEAT_MODE, payload: savedRepeat });
+    }
+    // Load auto-play setting
+    const savedAutoPlay = localStorage.getItem("autoPlayNext");
+    if (savedAutoPlay !== null) {
+      dispatch({
+        type: savedAutoPlay === "false" ? ACTIONS.TOGGLE_AUTO_PLAY : null,
+      });
+      if (savedAutoPlay === "false") {
+        dispatch({ type: ACTIONS.TOGGLE_AUTO_PLAY });
+      }
     }
   }, []);
 
@@ -168,30 +222,70 @@ export function YouTubePlayerProvider({ children }) {
     state.duration,
   ]);
 
-  // Media Session API integration
+  // Enhanced Media Session API integration
   useEffect(() => {
-    if (!state.currentTrack || !("mediaSession" in navigator)) return;
+    if (!state.currentTrack) {
+      clearMediaSession();
+      return;
+    }
 
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: state.currentTrack.title,
-      artist: state.currentTrack.author || "Audiobook",
-      album: "Vibe Audio",
-      artwork: [
-        {
-          src: state.currentTrack.thumbnail,
-          sizes: "512x512",
-          type: "image/jpeg",
-        },
-      ],
+    // Setup Media Session with track info and controls
+    setupMediaSession(state.currentTrack, {
+      play: () => {
+        playVideo();
+        dispatch({ type: ACTIONS.SET_PLAYING, payload: true });
+      },
+      pause: () => {
+        pauseVideo();
+        dispatch({ type: ACTIONS.SET_PLAYING, payload: false });
+      },
+      previous: playPrevious,
+      next: playNext,
+      seekBackward: () => seekBy(-10),
+      seekForward: () => seekBy(30),
+      seekTo: (time) => {
+        seekTo(time);
+        dispatch({ type: ACTIONS.SET_TIME, payload: time });
+      },
+      stop: () => {
+        pauseVideo();
+        dispatch({ type: ACTIONS.SET_PLAYING, payload: false });
+      },
     });
 
-    navigator.mediaSession.setActionHandler("play", play);
-    navigator.mediaSession.setActionHandler("pause", pause);
-    navigator.mediaSession.setActionHandler("seekbackward", () => seekBy(-10));
-    navigator.mediaSession.setActionHandler("seekforward", () => seekBy(30));
-    navigator.mediaSession.setActionHandler("previoustrack", playPrevious);
-    navigator.mediaSession.setActionHandler("nexttrack", playNext);
+    // Update background manager
+    if (backgroundManagerRef.current) {
+      backgroundManagerRef.current.setPlaying(state.isPlaying);
+    }
   }, [state.currentTrack]);
+
+  // Update Media Session playback state
+  useEffect(() => {
+    updateMediaSessionState(state.isPlaying ? "playing" : "paused");
+
+    // Update background manager
+    if (backgroundManagerRef.current) {
+      backgroundManagerRef.current.setPlaying(state.isPlaying);
+    }
+
+    // Manage wake lock based on playback state
+    if (state.isPlaying) {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+  }, [state.isPlaying]);
+
+  // Update Media Session position for lock screen seekbar
+  useEffect(() => {
+    if (state.duration > 0 && state.currentTime >= 0) {
+      updateMediaSessionPosition(
+        state.currentTime,
+        state.duration,
+        state.playbackSpeed,
+      );
+    }
+  }, [state.currentTime, state.duration, state.playbackSpeed]);
 
   // Handle player state change
   const handleStateChange = useCallback((event) => {
@@ -249,12 +343,40 @@ export function YouTubePlayerProvider({ children }) {
     dispatch({ type: ACTIONS.SET_LOADING, payload: false });
   }, []);
 
-  // Handle track ended
+  // Handle track ended - enhanced with repeat logic
   const handleEnded = useCallback(() => {
-    if (state.queueIndex < state.queue.length - 1) {
-      playNext();
+    switch (state.repeatMode) {
+      case "one":
+        // Replay current track
+        seekTo(0);
+        playVideo();
+        dispatch({ type: ACTIONS.SET_PLAYING, payload: true });
+        break;
+
+      case "all":
+        // Play next, or first if at end
+        if (state.queueIndex < state.queue.length - 1) {
+          const nextIndex = state.queueIndex + 1;
+          dispatch({ type: ACTIONS.SET_QUEUE_INDEX, payload: nextIndex });
+          loadTrack(state.queue[nextIndex]);
+        } else if (state.queue.length > 0) {
+          // Loop back to first track
+          dispatch({ type: ACTIONS.SET_QUEUE_INDEX, payload: 0 });
+          loadTrack(state.queue[0]);
+        }
+        break;
+
+      case "none":
+      default:
+        // Play next if auto-play enabled
+        if (state.autoPlayNext && state.queueIndex < state.queue.length - 1) {
+          const nextIndex = state.queueIndex + 1;
+          dispatch({ type: ACTIONS.SET_QUEUE_INDEX, payload: nextIndex });
+          loadTrack(state.queue[nextIndex]);
+        }
+        break;
     }
-  }, [state.queueIndex, state.queue.length]);
+  }, [state.repeatMode, state.autoPlayNext, state.queueIndex, state.queue]);
 
   // Load and play a track
   const loadTrack = async (track, startPosition = 0) => {
@@ -377,6 +499,67 @@ export function YouTubePlayerProvider({ children }) {
     dispatch({ type: ACTIONS.RESET });
   };
 
+  // Advanced controls
+  const setRepeatMode = (mode) => {
+    dispatch({ type: ACTIONS.SET_REPEAT_MODE, payload: mode });
+    localStorage.setItem("repeatMode", mode);
+  };
+
+  const cycleRepeatMode = () => {
+    const modes = ["none", "one", "all"];
+    const currentIndex = modes.indexOf(state.repeatMode);
+    const nextMode = modes[(currentIndex + 1) % modes.length];
+    setRepeatMode(nextMode);
+  };
+
+  const toggleAutoPlay = () => {
+    dispatch({ type: ACTIONS.TOGGLE_AUTO_PLAY });
+    localStorage.setItem("autoPlayNext", String(!state.autoPlayNext));
+  };
+
+  // Fisher-Yates shuffle algorithm
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  const toggleShuffle = () => {
+    if (!state.isShuffled) {
+      // Enable shuffle
+      dispatch({ type: ACTIONS.SET_ORIGINAL_QUEUE, payload: state.queue });
+
+      // Keep current track at position 0, shuffle rest
+      const currentTrack = state.queue[state.queueIndex];
+      const otherTracks = state.queue.filter((_, i) => i !== state.queueIndex);
+      const shuffledOthers = shuffleArray(otherTracks);
+      const newQueue = [currentTrack, ...shuffledOthers];
+
+      dispatch({ type: ACTIONS.SET_QUEUE, payload: newQueue });
+      dispatch({ type: ACTIONS.SET_QUEUE_INDEX, payload: 0 });
+      dispatch({ type: ACTIONS.SET_SHUFFLE, payload: true });
+    } else {
+      // Disable shuffle - restore original queue
+      const currentTrack = state.currentTrack;
+      const originalQueue = state.originalQueue;
+
+      // Find current track position in original queue
+      const originalIndex = originalQueue.findIndex(
+        (t) => t.videoId === currentTrack?.videoId,
+      );
+
+      dispatch({ type: ACTIONS.SET_QUEUE, payload: originalQueue });
+      dispatch({
+        type: ACTIONS.SET_QUEUE_INDEX,
+        payload: originalIndex >= 0 ? originalIndex : 0,
+      });
+      dispatch({ type: ACTIONS.SET_SHUFFLE, payload: false });
+    }
+  };
+
   const value = {
     ...state,
     containerId: containerIdRef.current,
@@ -394,6 +577,11 @@ export function YouTubePlayerProvider({ children }) {
     addToQueue,
     toggleExpanded,
     closePlayer,
+    // Advanced controls
+    setRepeatMode,
+    cycleRepeatMode,
+    toggleAutoPlay,
+    toggleShuffle,
   };
 
   return (

@@ -5,6 +5,7 @@
 AudioBookReader v2.0 là **pure frontend app** không cần backend server, có thể deploy trên bất kỳ static hosting nào.
 
 ### ✅ Yêu cầu
+
 - YouTube Data API v3 key
 - Static hosting platform
 - Domain (optional)
@@ -16,6 +17,7 @@ AudioBookReader v2.0 là **pure frontend app** không cần backend server, có 
 ### 1. **Vercel** (Khuyến nghị #1)
 
 #### Ưu điểm:
+
 - ✅ **Hoàn toàn miễn phí** cho personal projects
 - ✅ **Auto-deploy** từ GitHub
 - ✅ **Global CDN** tốc độ cao
@@ -26,6 +28,7 @@ AudioBookReader v2.0 là **pure frontend app** không cần backend server, có 
 #### Cách deploy:
 
 **Bước 1: Chuẩn bị**
+
 ```bash
 # 1. Push code lên GitHub
 git add .
@@ -38,19 +41,24 @@ npm run preview  # Test local
 ```
 
 **Bước 2: Deploy trên Vercel**
+
 1. Truy cập [vercel.com](https://vercel.com)
 2. Sign up bằng GitHub account
 3. Click **"New Project"**
 4. Import repository từ GitHub
 5. Configure:
+   > 💡 **Lưu ý:** Project đã có sẵn file `vercel.json`, Vercel sẽ tự động nhận diện các thiết lập sau:
    ```
    Framework Preset: Vite
    Build Command: npm run build
    Output Directory: dist
    Install Command: npm install
+   Rewrites: Đã cấu hình cho SPA (Single Page Application)
    ```
 
 **Bước 3: Environment Variables**
+Trong Dashboard Vercel (Project Settings > Environment Variables), hãy thêm:
+
 ```
 VITE_YOUTUBE_API_KEY=your_actual_api_key_here
 VITE_APP_NAME=AudioBookReader
@@ -58,11 +66,13 @@ VITE_APP_VERSION=2.0.0
 ```
 
 **Bước 4: Deploy**
+
 - Click **"Deploy"**
 - Vercel sẽ auto-build và deploy
 - Domain: `your-project.vercel.app`
 
 #### Auto-deploy setup:
+
 ```bash
 # Mỗi lần push code mới
 git push origin main
@@ -74,6 +84,7 @@ git push origin main
 ### 2. **Netlify** (Alternative #1)
 
 #### Ưu điểm:
+
 - ✅ **Miễn phí** 100GB bandwidth/month
 - ✅ **Drag & drop deploy**
 - ✅ **Form handling** (bonus feature)
@@ -82,6 +93,7 @@ git push origin main
 #### Cách deploy:
 
 **Option A: Drag & Drop**
+
 ```bash
 # 1. Build project
 npm run build
@@ -91,6 +103,7 @@ npm run build
 ```
 
 **Option B: Git Integration**
+
 1. Truy cập [netlify.com](https://netlify.com)
 2. **"New site from Git"**
 3. Connect GitHub repository
@@ -109,6 +122,7 @@ npm run build
 ### 3. **GitHub Pages** (Miễn phí hoàn toàn)
 
 #### Ưu điểm:
+
 - ✅ **Hoàn toàn miễn phí**
 - ✅ **Unlimited bandwidth**
 - ✅ **Custom domain** support
@@ -117,11 +131,13 @@ npm run build
 #### Cách deploy:
 
 **Bước 1: Install gh-pages**
+
 ```bash
 npm install --save-dev gh-pages
 ```
 
 **Bước 2: Update package.json**
+
 ```json
 {
   "homepage": "https://yourusername.github.io/AudioBookReader",
@@ -133,19 +149,21 @@ npm install --save-dev gh-pages
 ```
 
 **Bước 3: Workaround cho API key**
+
 ```javascript
 // src/config/env.js
-export const YOUTUBE_API_KEY = 
-  import.meta.env.VITE_YOUTUBE_API_KEY || 
-  'your_api_key_here'; // Fallback cho GitHub Pages
+export const YOUTUBE_API_KEY =
+  import.meta.env.VITE_YOUTUBE_API_KEY || "your_api_key_here"; // Fallback cho GitHub Pages
 ```
 
 **Bước 4: Deploy**
+
 ```bash
 npm run deploy
 ```
 
 **Bước 5: Enable GitHub Pages**
+
 1. GitHub repo → Settings → Pages
 2. Source: Deploy from branch `gh-pages`
 3. URL: `https://yourusername.github.io/AudioBookReader`
@@ -155,6 +173,7 @@ npm run deploy
 ### 4. **Firebase Hosting** (Google)
 
 #### Ưu điểm:
+
 - ✅ **Miễn phí** 10GB storage
 - ✅ **Global CDN**
 - ✅ **Custom domain**
@@ -163,6 +182,7 @@ npm run deploy
 #### Cách deploy:
 
 **Bước 1: Setup Firebase**
+
 ```bash
 npm install -g firebase-tools
 firebase login
@@ -170,6 +190,7 @@ firebase init hosting
 ```
 
 **Bước 2: Configure firebase.json**
+
 ```json
 {
   "hosting": {
@@ -186,6 +207,7 @@ firebase init hosting
 ```
 
 **Bước 3: Deploy**
+
 ```bash
 npm run build
 firebase deploy
@@ -196,6 +218,7 @@ firebase deploy
 ## 🔧 Production Optimization
 
 ### 1. **Environment Variables**
+
 ```bash
 # .env.production
 VITE_YOUTUBE_API_KEY=your_production_api_key
@@ -204,24 +227,26 @@ VITE_APP_VERSION=2.0.0
 ```
 
 ### 2. **Build Optimization**
+
 ```javascript
 // vite.config.js - Production optimizations
 export default defineConfig({
   build: {
-    minify: 'terser',
+    minify: "terser",
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          youtube: ['./src/services/youtube.js']
-        }
-      }
-    }
-  }
+          vendor: ["react", "react-dom"],
+          youtube: ["./src/services/youtube.js"],
+        },
+      },
+    },
+  },
 });
 ```
 
 ### 3. **PWA Optimization**
+
 ```javascript
 // Service Worker caching
 workbox: {
@@ -233,11 +258,11 @@ workbox: {
         cacheName: "youtube-api-cache",
         expiration: {
           maxEntries: 100,
-          maxAgeSeconds: 60 * 30 // 30 minutes
-        }
-      }
-    }
-  ]
+          maxAgeSeconds: 60 * 30, // 30 minutes
+        },
+      },
+    },
+  ];
 }
 ```
 
@@ -246,6 +271,7 @@ workbox: {
 ## 🌐 Custom Domain Setup
 
 ### Vercel Custom Domain:
+
 1. Vercel Dashboard → Project → Settings → Domains
 2. Add domain: `yourdomain.com`
 3. Configure DNS:
@@ -256,6 +282,7 @@ workbox: {
    ```
 
 ### Netlify Custom Domain:
+
 1. Netlify Dashboard → Site → Domain settings
 2. Add custom domain
 3. Configure DNS:
@@ -269,18 +296,19 @@ workbox: {
 
 ## 📊 So sánh Platforms
 
-| Platform | Miễn phí | Auto-deploy | Custom Domain | Env Vars | CDN |
-|----------|----------|-------------|---------------|----------|-----|
-| **Vercel** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Netlify** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **GitHub Pages** | ✅ | ✅ | ✅ | ❌ | ✅ |
-| **Firebase** | ✅ | ❌ | ✅ | ❌ | ✅ |
+| Platform         | Miễn phí | Auto-deploy | Custom Domain | Env Vars | CDN |
+| ---------------- | -------- | ----------- | ------------- | -------- | --- |
+| **Vercel**       | ✅       | ✅          | ✅            | ✅       | ✅  |
+| **Netlify**      | ✅       | ✅          | ✅            | ✅       | ✅  |
+| **GitHub Pages** | ✅       | ✅          | ✅            | ❌       | ✅  |
+| **Firebase**     | ✅       | ❌          | ✅            | ❌       | ✅  |
 
 ---
 
 ## 🚀 Quick Deploy Commands
 
 ### Vercel (Khuyến nghị):
+
 ```bash
 # One-time setup
 npm i -g vercel
@@ -291,8 +319,9 @@ vercel --prod
 ```
 
 ### Netlify:
+
 ```bash
-# One-time setup  
+# One-time setup
 npm i -g netlify-cli
 netlify login
 
@@ -301,6 +330,7 @@ netlify deploy --prod --dir=dist
 ```
 
 ### GitHub Pages:
+
 ```bash
 npm run deploy
 ```
@@ -310,6 +340,7 @@ npm run deploy
 ## 🔒 Security Best Practices
 
 ### 1. **API Key Security**
+
 ```javascript
 // ✅ Restrict API key trong Google Cloud Console
 // - HTTP referrers: yourdomain.com/*
@@ -317,6 +348,7 @@ npm run deploy
 ```
 
 ### 2. **Environment Variables**
+
 ```bash
 # ❌ KHÔNG commit .env files
 # ✅ Chỉ commit .env.example
@@ -324,6 +356,7 @@ npm run deploy
 ```
 
 ### 3. **HTTPS**
+
 ```bash
 # ✅ Tất cả platforms đều support HTTPS miễn phí
 # ✅ Force HTTPS redirect
@@ -334,16 +367,19 @@ npm run deploy
 ## 🎯 Khuyến nghị
 
 ### **Cho beginners**: Vercel
+
 - Setup đơn giản nhất
 - Auto-deploy từ GitHub
 - Performance tốt nhất
 
 ### **Cho advanced users**: Netlify
+
 - Nhiều features hơn
 - Form handling
 - Edge functions
 
 ### **Cho budget = 0**: GitHub Pages
+
 - Hoàn toàn miễn phí
 - Unlimited bandwidth
 - Cần workaround cho env vars
@@ -353,6 +389,7 @@ npm run deploy
 ## 📞 Support
 
 Nếu gặp vấn đề deploy:
+
 1. Check build logs trên platform
 2. Test local build: `npm run build && npm run preview`
 3. Verify environment variables

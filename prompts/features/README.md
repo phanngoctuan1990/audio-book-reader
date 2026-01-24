@@ -37,6 +37,12 @@ Bộ prompts chi tiết để implement các tính năng thiếu từ Music-CLI 
    - Interactive progress bar
    - Queue information display
 
+### 🔒 Essential Mobile Features
+7. **[07-background-audio.md](./07-background-audio.md)**
+   - Background audio playback
+   - Lock screen controls
+   - Media Session API integration
+
 ## 🚀 Implementation Order
 
 ### Phase 1: Core Features (Week 1)
@@ -53,6 +59,11 @@ Bộ prompts chi tiết để implement các tính năng thiếu từ Music-CLI 
 06-enhanced-now-playing.md → Player UI enhancements
 ```
 
+### Phase 3: Mobile Optimization (Week 3)
+```
+07-background-audio.md → Background playback & lock screen controls
+```
+
 ## 📊 Feature Comparison
 
 | Feature | Music-CLI | Current App | Implementation |
@@ -65,6 +76,7 @@ Bộ prompts chi tiết để implement các tính năng thiếu từ Music-CLI 
 | Audio Visualizer | ✅ | ❌ | Feature 03 |
 | Grid View Results | ✅ | ❌ | Feature 04 |
 | Enhanced Now Playing | ✅ | ❌ | Feature 06 |
+| Background Audio | ❌ | ❌ | Feature 07 |
 
 ## 🎯 Success Metrics
 

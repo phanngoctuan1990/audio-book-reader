@@ -83,6 +83,52 @@ body {
   box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
 }
 
+/* Smaller glow for mini player */
+.glow-sm {
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+}
+
+/* Playing animation - bouncing bars */
+@keyframes playingBounce {
+  0%, 80%, 100% { 
+    height: 25%; 
+    opacity: 0.7;
+  }
+  40% { 
+    height: 100%; 
+    opacity: 1;
+  }
+}
+
+.playing-animation .bar {
+  animation: playingBounce 1.2s ease-in-out infinite;
+}
+
+/* Enhanced progress bar styles */
+.progress-bar-container {
+  position: relative;
+}
+
+.progress-bar-container:hover .progress-knob {
+  transform: scale(1.2);
+}
+
+/* Time tooltip animation */
+.time-tooltip {
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 /* Safe area padding */
 .pt-safe {
   padding-top: max(1rem, env(safe-area-inset-top));

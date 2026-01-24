@@ -2,10 +2,20 @@
  * FullPlayerView Component
  * Full-screen player view with custom controls
  */
+import { useState } from "react";
 import { usePlayer } from "../../contexts/PlayerContext";
 import { formatTime } from "../../utils/formatters";
+import RepeatButton from "./RepeatButton";
+import ShuffleButton from "./ShuffleButton";
+import AutoPlayButton from "./AutoPlayButton";
+import AudioVisualizer from "./AudioVisualizer";
+import ProgressBar from "./ProgressBar";
+import PlayingAnimation from "./PlayingAnimation";
+import QueueInfo from "./QueueInfo";
 
 function FullPlayerView() {
+  const [showVisualizer, setShowVisualizer] = useState(true);
+
   const {
     currentTrack,
     isPlaying,
@@ -16,6 +26,8 @@ function FullPlayerView() {
     volume,
     playbackSpeed,
     error,
+    queue,
+    queueIndex,
     toggle,
     seek,
     seekBy,
@@ -31,14 +43,6 @@ function FullPlayerView() {
   if (!currentTrack) return null;
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-
-  // Handle progress bar click
-  const handleProgressClick = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const percent = (e.clientX - rect.left) / rect.width;
-    const newTime = percent * duration;
-    seek(newTime);
-  };
 
   // Handle volume change
   const handleVolumeChange = (e) => {
@@ -92,8 +96,8 @@ function FullPlayerView() {
       </div>
 
       {/* Thumbnail & Info */}
-      <div className="flex-1 flex flex-col items-center justify-center px-8">
-        <div className="relative w-64 h-64 mb-8">
+      <div className="flex-1 flex flex-col items-center justify-center px-8 overflow-y-auto">
+        <div className="relative w-64 h-64 mb-6 flex-shrink-0">
           <img
             src={currentTrack.thumbnail}
             alt={currentTrack.title}
@@ -104,12 +108,45 @@ function FullPlayerView() {
               <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
             </div>
           )}
+
+          {/* Playing animation indicator */}
+          {isPlaying && !isLoading && !isBuffering && (
+            <div className="absolute bottom-2 right-2 p-2 bg-black/60 backdrop-blur-sm rounded-lg">
+              <PlayingAnimation size="md" barCount={4} />
+            </div>
+          )}
+
+          {/* Audio Visualizer Overlay */}
+          {showVisualizer && isPlaying && !isLoading && !isBuffering && (
+            <div className="absolute bottom-0 left-0 right-0 h-16 rounded-b-2xl overflow-hidden bg-gradient-to-t from-black/60 to-transparent">
+              <AudioVisualizer enabled={showVisualizer} barCount={16} />
+            </div>
+          )}
         </div>
 
-        <h3 className="text-xl font-bold text-white text-center mb-2 line-clamp-2">
+        <h3 className="text-xl font-bold text-white text-center mb-1 line-clamp-2">
           {currentTrack.title}
         </h3>
-        <p className="text-white/60 text-center mb-8">{currentTrack.author}</p>
+        <p className="text-white/60 text-center mb-2">{currentTrack.author}</p>
+
+        {/* Enhanced Time Display */}
+        <div className="flex items-center justify-center gap-2 text-sm mb-3">
+          <span className="text-primary font-medium">
+            {formatTime(currentTime)}
+          </span>
+          <span className="text-white/40">/</span>
+          <span className="text-white/60">{formatTime(duration)}</span>
+          <span className="text-white/40 text-xs">
+            ({Math.round(progress)}%)
+          </span>
+        </div>
+
+        {/* Queue Info */}
+        {queue.length > 1 && (
+          <div className="w-full max-w-xs mb-4">
+            <QueueInfo queue={queue} currentIndex={queueIndex} />
+          </div>
+        )}
 
         {/* Error message */}
         {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
@@ -117,19 +154,16 @@ function FullPlayerView() {
 
       {/* Controls */}
       <div className="px-6 pb-8">
-        {/* Progress bar */}
+        {/* Enhanced Progress bar */}
         <div className="mb-4">
-          <div
-            className="h-2 bg-white/20 rounded-full cursor-pointer touch-target"
-            onClick={handleProgressClick}
-          >
-            <div
-              className="h-full bg-gradient-primary rounded-full relative"
-              style={{ width: `${progress}%` }}
-            >
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg" />
-            </div>
-          </div>
+          <ProgressBar
+            currentTime={currentTime}
+            duration={duration}
+            onSeek={seek}
+            height="h-2"
+            showTooltip={true}
+            showKnob={true}
+          />
           <div className="flex justify-between mt-2 text-sm text-white/60">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
@@ -223,6 +257,13 @@ function FullPlayerView() {
 
         {/* Secondary controls */}
         <div className="flex items-center justify-between px-4">
+          {/* Advanced controls - left side */}
+          <div className="flex items-center gap-2">
+            <ShuffleButton size="sm" />
+            <RepeatButton size="sm" />
+            <AutoPlayButton size="sm" />
+          </div>
+
           {/* Speed */}
           <select
             value={playbackSpeed}
@@ -236,8 +277,27 @@ function FullPlayerView() {
             ))}
           </select>
 
-          {/* Volume */}
+          {/* Visualizer toggle & Volume */}
           <div className="flex items-center gap-2">
+            {/* Visualizer toggle */}
+            <button
+              onClick={() => setShowVisualizer(!showVisualizer)}
+              className={`
+                w-8 h-8 flex items-center justify-center rounded-full transition-all
+                ${
+                  showVisualizer
+                    ? "bg-primary/20 text-primary"
+                    : "bg-white/10 text-white/60"
+                }
+              `}
+              title={showVisualizer ? "Hide visualizer" : "Show visualizer"}
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3 17V7h2v10H3zm4-4v-2h2v2H7zm4 4V7h2v10h-2zm4-8v2h2V9h-2zm0 4v4h2v-4h-2zm4-6v10h2V7h-2z" />
+              </svg>
+            </button>
+
+            {/* Volume */}
             <svg
               className="w-5 h-5 text-white/60"
               fill="currentColor"
@@ -251,7 +311,7 @@ function FullPlayerView() {
               max="100"
               value={volume}
               onChange={handleVolumeChange}
-              className="w-24 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
+              className="w-16 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
             />
           </div>
         </div>

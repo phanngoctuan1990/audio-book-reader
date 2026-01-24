@@ -58,6 +58,7 @@ Choose features to implement from `features/` directory:
 | 🔍 Enhanced Search | [features/04-enhanced-search.md](./features/04-enhanced-search.md) | URL paste, grid view, filters |
 | 📑 Tab Navigation | [features/05-tab-navigation.md](./features/05-tab-navigation.md) | YouTube/Radio tab system |
 | 🎵 Rich Player | [features/06-enhanced-now-playing.md](./features/06-enhanced-now-playing.md) | Enhanced now playing display |
+| 🔒 Background Audio | [features/07-background-audio.md](./features/07-background-audio.md) | Audio playback khi tắt màn hình |
 
 ## 🎯 Success Criteria
 

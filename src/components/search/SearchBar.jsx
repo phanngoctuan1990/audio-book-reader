@@ -1,9 +1,18 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from "react";
+import { isYouTubeUrl } from "../../hooks/useSearch";
 
 /**
- * SearchBar component with debounce and clear button
+ * SearchBar component with debounce, clear button, and URL paste support
  */
-function SearchBar({ value, onChange, onClear, isLoading, placeholder }) {
+function SearchBar({
+  value,
+  onChange,
+  onClear,
+  onUrlPaste,
+  isLoading,
+  inputMode = "text",
+  placeholder,
+}) {
   const inputRef = useRef(null);
 
   // Focus input on mount
@@ -17,16 +26,36 @@ function SearchBar({ value, onChange, onClear, isLoading, placeholder }) {
     return () => clearTimeout(timer);
   }, []);
 
+  // Handle paste event for URL detection
+  const handlePaste = useCallback(
+    (e) => {
+      const pastedText = e.clipboardData.getData("text");
+
+      if (isYouTubeUrl(pastedText) && onUrlPaste) {
+        e.preventDefault();
+        onUrlPaste(pastedText);
+      }
+    },
+    [onUrlPaste],
+  );
+
   const handleClear = () => {
     onClear();
     inputRef.current?.focus();
   };
 
+  // Dynamic placeholder based on input mode
+  const getPlaceholder = () => {
+    if (placeholder) return placeholder;
+    if (inputMode === "url") return "Đã dán URL YouTube...";
+    return "Tìm sách nói hoặc dán URL YouTube...";
+  };
+
   return (
     <div className="relative">
-      {/* Search icon */}
+      {/* Search/URL icon */}
       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 text-lg pointer-events-none">
-        🔍
+        {inputMode === "url" ? "🔗" : "🔍"}
       </span>
 
       {/* Input */}
@@ -35,17 +64,31 @@ function SearchBar({ value, onChange, onClear, isLoading, placeholder }) {
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder || "Tìm sách nói... (VD: Đắc Nhân Tâm)"}
-        className="w-full bg-dark-700 text-white placeholder-white/40 
-                   rounded-2xl px-5 py-4 pl-12 pr-12
-                   border border-white/10 
-                   focus:border-primary focus:outline-none
-                   transition-colors text-base"
+        onPaste={handlePaste}
+        placeholder={getPlaceholder()}
+        className={`
+          w-full bg-dark-700 text-white placeholder-white/40 
+          rounded-2xl px-5 py-4 pl-12 pr-12
+          border transition-colors text-base
+          focus:outline-none
+          ${
+            inputMode === "url"
+              ? "border-accent-purple focus:border-accent-purple"
+              : "border-white/10 focus:border-primary"
+          }
+        `}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck="false"
       />
+
+      {/* URL mode indicator */}
+      {inputMode === "url" && (
+        <span className="absolute left-12 top-1/2 -translate-y-1/2 text-xs text-accent-purple font-medium">
+          URL
+        </span>
+      )}
 
       {/* Loading indicator or Clear button */}
       <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -62,8 +105,18 @@ function SearchBar({ value, onChange, onClear, isLoading, placeholder }) {
                        transition-colors touch-target"
             aria-label="Xóa tìm kiếm"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         ) : null}
