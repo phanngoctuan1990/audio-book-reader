@@ -110,10 +110,40 @@ export function destroyPlayer() {
 // =============================================================================
 
 /**
- * Play video
+ * Play video with retry mechanism for background playback
+ * @param {number} retries - Number of retry attempts
+ * @returns {Promise<boolean>} - Whether play was successful
  */
-export function playVideo() {
-  if (player?.playVideo) player.playVideo();
+export async function playVideo(retries = 3) {
+  if (!player?.playVideo) return false;
+
+  for (let i = 0; i < retries; i++) {
+    try {
+      player.playVideo();
+
+      // Wait a bit and check if it actually started playing
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const state = player.getPlayerState?.();
+      if (state === PlayerState.PLAYING || state === PlayerState.BUFFERING) {
+        return true;
+      }
+    } catch (e) {
+      // Retry on next iteration
+    }
+
+    // Wait before retry
+    if (i < retries - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+  }
+
+  // Final attempt without checking
+  if (player?.playVideo) {
+    player.playVideo();
+  }
+
+  return false;
 }
 
 /**

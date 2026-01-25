@@ -32,6 +32,8 @@ import {
   updateMediaSessionState,
   updateMediaSessionPosition,
   clearMediaSession,
+  startSilentAudio,
+  stopSilentAudio,
 } from "../services/mediaSession";
 import { getBackgroundManager } from "../services/backgroundPlayback";
 import { requestWakeLock, releaseWakeLock } from "../services/wakeLock";
@@ -259,7 +261,7 @@ export function YouTubePlayerProvider({ children }) {
     }
   }, [state.currentTrack]);
 
-  // Update Media Session playback state
+  // Update Media Session playback state and manage silent audio
   useEffect(() => {
     updateMediaSessionState(state.isPlaying ? "playing" : "paused");
 
@@ -268,11 +270,15 @@ export function YouTubePlayerProvider({ children }) {
       backgroundManagerRef.current.setPlaying(state.isPlaying);
     }
 
-    // Manage wake lock based on playback state
+    // Manage wake lock and silent audio based on playback state
     if (state.isPlaying) {
       requestWakeLock();
+      // Start silent audio to keep media session alive in background
+      startSilentAudio();
     } else {
       releaseWakeLock();
+      // Stop silent audio when paused
+      stopSilentAudio();
     }
   }, [state.isPlaying]);
 

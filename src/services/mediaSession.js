@@ -1,7 +1,62 @@
 /**
  * Media Session API Service
  * Provides lock screen and notification controls for audio playback
+ *
+ * IMPORTANT: YouTube IFrame API has limitations with background playback on mobile.
+ * We use a silent audio element as a workaround to keep Media Session active.
  */
+
+// Silent audio element to keep Media Session alive in background
+let silentAudio = null;
+let currentControls = null;
+
+/**
+ * Create silent audio element for background playback
+ * This keeps the audio session alive when YouTube player would normally pause
+ */
+function createSilentAudio() {
+  if (silentAudio) return silentAudio;
+
+  // Create a very short silent audio (base64 encoded 1-second silent MP3)
+  // This is a minimal silent MP3 file
+  const silentMp3 =
+    "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRwMHAAAAAAD/+9DEAAAIAANIAAAAExBGa9AAABEREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREf/7UMQAgAAADSAAAAAAAAANIAAAABEREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREQ==";
+
+  silentAudio = new Audio(silentMp3);
+  silentAudio.loop = true;
+  silentAudio.volume = 0.01; // Nearly silent but not muted (some browsers ignore muted)
+
+  // Required for background playback on iOS
+  silentAudio.setAttribute("playsinline", "true");
+  silentAudio.setAttribute("webkit-playsinline", "true");
+
+  return silentAudio;
+}
+
+/**
+ * Start silent audio to keep session alive
+ */
+export function startSilentAudio() {
+  const audio = createSilentAudio();
+
+  // Try to play - may fail without user interaction
+  const playPromise = audio.play();
+  if (playPromise !== undefined) {
+    playPromise.catch(() => {
+      // Silent audio play failed - will try again on user interaction
+    });
+  }
+}
+
+/**
+ * Stop silent audio
+ */
+export function stopSilentAudio() {
+  if (silentAudio) {
+    silentAudio.pause();
+    silentAudio.currentTime = 0;
+  }
+}
 
 /**
  * Setup Media Session with track metadata and control handlers
@@ -10,6 +65,9 @@
  */
 export function setupMediaSession(track, controls) {
   if (!("mediaSession" in navigator)) return;
+
+  // Store controls for background access
+  currentControls = controls;
 
   // Set metadata with multiple artwork sizes
   navigator.mediaSession.metadata = new MediaMetadata({
@@ -26,10 +84,27 @@ export function setupMediaSession(track, controls) {
     ],
   });
 
-  // Set action handlers
+  // Set action handlers with retry mechanism
   try {
-    navigator.mediaSession.setActionHandler("play", controls.play);
-    navigator.mediaSession.setActionHandler("pause", controls.pause);
+    navigator.mediaSession.setActionHandler("play", async () => {
+      // Start silent audio to keep session alive
+      startSilentAudio();
+
+      // Execute the actual play control
+      if (controls.play) {
+        await controls.play();
+      }
+    });
+
+    navigator.mediaSession.setActionHandler("pause", () => {
+      // Stop silent audio when pausing
+      stopSilentAudio();
+
+      if (controls.pause) {
+        controls.pause();
+      }
+    });
+
     navigator.mediaSession.setActionHandler("previoustrack", controls.previous);
     navigator.mediaSession.setActionHandler("nexttrack", controls.next);
     navigator.mediaSession.setActionHandler(
@@ -52,11 +127,21 @@ export function setupMediaSession(track, controls) {
 
     // Stop handler
     if (controls.stop) {
-      navigator.mediaSession.setActionHandler("stop", controls.stop);
+      navigator.mediaSession.setActionHandler("stop", () => {
+        stopSilentAudio();
+        controls.stop();
+      });
     }
   } catch (error) {
     // Some handlers may not be supported
   }
+}
+
+/**
+ * Get current controls
+ */
+export function getCurrentControls() {
+  return currentControls;
 }
 
 /**
