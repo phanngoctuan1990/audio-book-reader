@@ -46,7 +46,7 @@ function MiniPlayer() {
   };
 
   return (
-    <div className="fixed bottom-16 sm:bottom-20 lg:bottom-4 left-0 right-0 z-30 px-3 sm:px-4 lg:px-0 pb-2 animate-slide-up">
+    <div className="fixed bottom-[72px] sm:bottom-24 lg:bottom-4 left-0 right-0 z-30 px-3 sm:px-4 lg:px-0 pb-safe animate-slide-up">
       <div
         className="bg-cream-50 rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-soft-player 
                    border border-cream-400/30 sm:max-w-lg sm:mx-auto lg:max-w-xl lg:ml-72

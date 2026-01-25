@@ -30,7 +30,7 @@ function EnhancedMiniPlayer() {
   if (!currentTrack) return null;
 
   return (
-    <div className="fixed bottom-16 sm:bottom-20 lg:bottom-4 left-0 right-0 z-30 px-3 sm:px-4 lg:px-0 pb-2">
+    <div className="fixed bottom-[72px] sm:bottom-24 lg:bottom-4 left-0 right-0 z-30 px-3 sm:px-4 lg:px-0 pb-safe">
       {/* Responsive container - centered on tablet/desktop */}
       <div
         className="enhanced-mini-player bg-cream-50 rounded-2xl overflow-hidden shadow-soft-player border border-cream-400/30

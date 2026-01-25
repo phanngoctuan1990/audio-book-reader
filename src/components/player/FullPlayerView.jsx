@@ -166,7 +166,12 @@ function FullPlayerView() {
       </div>
 
       {/* Controls */}
-      <div className="px-6 pb-8 bg-cream-50 rounded-t-3xl shadow-soft-player pt-6">
+      <div
+        className="px-6 pb-safe bg-cream-50 rounded-t-3xl shadow-soft-player pt-6"
+        style={{
+          paddingBottom: "max(2rem, env(safe-area-inset-bottom, 1rem))",
+        }}
+      >
         {/* Enhanced Progress bar */}
         <div className="mb-4">
           <ProgressBar
@@ -258,14 +263,11 @@ function FullPlayerView() {
           </button>
         </div>
 
-        {/* Secondary controls */}
-        <div className="flex items-center justify-between px-2">
-          {/* Advanced controls - left side */}
-          <div className="flex items-center gap-2">
-            <ShuffleButton size="sm" />
-            <RepeatButton size="sm" />
-            <AutoPlayButton size="sm" />
-          </div>
+        {/* Secondary controls - Row 1: Advanced controls */}
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <ShuffleButton size="sm" />
+          <RepeatButton size="sm" />
+          <AutoPlayButton size="sm" />
 
           {/* Speed */}
           <select
@@ -282,38 +284,38 @@ function FullPlayerView() {
             ))}
           </select>
 
-          {/* Visualizer toggle & Volume */}
-          <div className="flex items-center gap-2">
-            {/* Visualizer toggle */}
-            <button
-              onClick={() => setShowVisualizer(!showVisualizer)}
-              className={`
-                w-9 h-9 flex items-center justify-center rounded-full transition-all touch-target
-                focus-visible:ring-2 focus-visible:ring-gold-700
-                ${
-                  showVisualizer
-                    ? "bg-gold-400 text-white shadow-soft-3d-sm"
-                    : "bg-cream-200 text-cream-600 hover:bg-cream-300"
-                }
-              `}
-              aria-label={showVisualizer ? "Ẩn visualizer" : "Hiện visualizer"}
-            >
-              <BarChart3 className="w-4 h-4" />
-            </button>
+          {/* Visualizer toggle */}
+          <button
+            onClick={() => setShowVisualizer(!showVisualizer)}
+            className={`
+              w-9 h-9 flex items-center justify-center rounded-full transition-all touch-target
+              focus-visible:ring-2 focus-visible:ring-gold-700
+              ${
+                showVisualizer
+                  ? "bg-gold-400 text-white shadow-soft-3d-sm"
+                  : "bg-cream-200 text-cream-600 hover:bg-cream-300"
+              }
+            `}
+            aria-label={showVisualizer ? "Ẩn visualizer" : "Hiện visualizer"}
+          >
+            <BarChart3 className="w-4 h-4" />
+          </button>
+        </div>
 
-            {/* Volume */}
-            <Volume2 className="w-5 h-5 text-cream-600" />
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={volume}
-              onChange={handleVolumeChange}
-              className="w-16 h-2 bg-cream-300 rounded-lg appearance-none cursor-pointer
-                         accent-gold-400"
-              aria-label="Âm lượng"
-            />
-          </div>
+        {/* Secondary controls - Row 2: Volume slider */}
+        <div className="flex items-center justify-center gap-3">
+          <Volume2 className="w-5 h-5 text-cream-600 flex-shrink-0" />
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={volume}
+            onChange={handleVolumeChange}
+            className="w-32 sm:w-40 h-2 bg-cream-300 rounded-lg appearance-none cursor-pointer
+                       accent-gold-400"
+            aria-label="Âm lượng"
+          />
+          <span className="text-xs text-cream-600 w-8">{volume}%</span>
         </div>
       </div>
     </div>
