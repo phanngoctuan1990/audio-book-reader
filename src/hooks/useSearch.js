@@ -89,7 +89,7 @@ export function useSearch() {
    * @param {Error} err - Error object
    * @returns {string} User-friendly error message
    */
-  const parseYouTubeError = (err) => {
+  const parseYouTubeError = useCallback((err) => {
     const message = err.message?.toLowerCase() || "";
 
     // Quota exceeded
@@ -122,7 +122,7 @@ export function useSearch() {
 
     // Generic error
     return "Không thể tìm kiếm. Vui lòng thử lại.";
-  };
+  }, []);
 
   /**
    * Search by video ID (for URL paste)
@@ -236,8 +236,8 @@ export function useSearch() {
           // Add audiobook prefix for better results
           const fullQuery = `${AUDIOBOOK_PREFIX} ${trimmedQuery}`;
 
-          // Use YouTube Data API v3 directly
-          const data = await searchVideos(fullQuery);
+          // Use YouTube Data API v3 directly with filters
+          const data = await searchVideos(fullQuery, 30, filters);
 
           // Handle no results
           if (!data || data.length === 0) {
@@ -246,7 +246,33 @@ export function useSearch() {
             return;
           }
 
-          setResults(data);
+          // Client-side filtering for strict duration ranges 
+          // (YouTube API ranges are too broad: <4m, 4-20m, >20m)
+          const filteredResults = data.filter(item => {
+            if (!filters.duration || filters.duration === "all") return true;
+            
+            // Parse duration "H:MM:SS" or "MM:SS"
+            const parts = item.duration.split(':').map(Number);
+            let seconds = 0;
+            if (parts.length === 3) {
+              seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+            } else if (parts.length === 2) {
+              seconds = parts[0] * 60 + parts[1];
+            } else {
+              seconds = parts[0] || 0;
+            }
+
+            if (filters.duration === "short") return seconds < 3600; // < 1h
+            if (filters.duration === "medium") return seconds >= 3600 && seconds <= 10800; // 1-3h
+            if (filters.duration === "long") return seconds > 10800; // > 3h
+            return true;
+          });
+
+          if (filteredResults.length === 0 && data.length > 0) {
+            setError("Không có kết quả phù hợp với bộ lọc hiện tại.");
+          }
+
+          setResults(filteredResults);
           setError(null);
 
           // Save to search history
@@ -272,7 +298,7 @@ export function useSearch() {
         debounceTimerRef.current = setTimeout(executeSearch, SEARCH_DEBOUNCE);
       }
     },
-    [handleUrlPaste],
+    [handleUrlPaste, filters, refreshHistory, parseYouTubeError],
   );
 
   /**
@@ -286,6 +312,13 @@ export function useSearch() {
     },
     [performSearch],
   );
+
+  // Trigger search when filters change
+  useEffect(() => {
+    if (query.trim() && hasSearched) {
+      performSearch(query, true);
+    }
+  }, [filters, performSearch, query, hasSearched]);
 
   /**
    * Update view mode and persist

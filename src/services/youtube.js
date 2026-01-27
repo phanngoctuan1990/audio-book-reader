@@ -232,9 +232,10 @@ export function cueVideoById(videoId, startSeconds = 0) {
  * Search videos via YouTube Data API v3
  * @param {string} query - Search query
  * @param {number} maxResults - Maximum results (default: 20)
+ * @param {Object} filters - Search filters (duration, uploadDate, sortBy)
  * @returns {Promise<Array>} Search results
  */
-export async function searchVideos(query, maxResults = 20) {
+export async function searchVideos(query, maxResults = 25, filters = {}) {
   if (!YOUTUBE_API_KEY) {
     throw new Error("YouTube API key not configured");
   }
@@ -246,6 +247,44 @@ export async function searchVideos(query, maxResults = 20) {
     maxResults: String(maxResults),
     key: YOUTUBE_API_KEY,
   });
+
+  // Apply filters
+  if (filters.sortBy && filters.sortBy !== "relevance") {
+    params.append("order", filters.sortBy);
+  }
+
+  // Duration mapping
+  // API supports: 'any', 'short' (< 4m), 'medium' (4-20m), 'long' (> 20m)
+  if (filters.duration && filters.duration !== "all") {
+    if (filters.duration === "short") {
+      // User says 'Dưới 1h', but API's 'short' is < 4m. 
+      // We don't set specific API filter here to get more results, 
+      // then filter client-side.
+    } else {
+      // 1-3h or > 3h both fall into 'long' (> 20m)
+      params.append("videoDuration", "long");
+    }
+  }
+
+  // Upload date mapping
+  if (filters.uploadDate && filters.uploadDate !== "all") {
+    const now = new Date();
+    let publishedAfter;
+
+    if (filters.uploadDate === "today") {
+      publishedAfter = new Date(now.setDate(now.getDate() - 1));
+    } else if (filters.uploadDate === "week") {
+      publishedAfter = new Date(now.setDate(now.getDate() - 7));
+    } else if (filters.uploadDate === "month") {
+      publishedAfter = new Date(now.setMonth(now.getMonth() - 1));
+    } else if (filters.uploadDate === "year") {
+      publishedAfter = new Date(now.setFullYear(now.getFullYear() - 1));
+    }
+
+    if (publishedAfter) {
+      params.append("publishedAfter", publishedAfter.toISOString());
+    }
+  }
 
   try {
     const response = await fetch(`${YOUTUBE_API_BASE}/search?${params}`);
