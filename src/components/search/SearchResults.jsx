@@ -189,7 +189,7 @@ function SearchResults({
                     loading="lazy"
                   />
                   {/* Duration badge */}
-                  {item.duration > 0 && (
+                  {item.duration && item.duration !== '0:00' && (
                     <span className="absolute bottom-1 right-1 bg-cream-900/80 text-white text-xs px-1.5 py-0.5 rounded">
                       {formatDuration(item.duration)}
                     </span>

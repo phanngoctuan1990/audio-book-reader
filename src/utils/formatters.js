@@ -82,12 +82,32 @@ export function formatDuration(duration) {
 }
 
 /**
- * Format progress percentage
- * @param {number} current - Current position
- * @param {number} total - Total duration
- * @returns {number} Progress percentage (0-100)
+ * Convert duration string or number to total seconds
+ * Handles "H:MM:SS", "MM:SS", "SS", and YouTube's "PT1H2M3S"
+ * @param {string|number} duration 
+ * @returns {number} Total seconds
  */
-export function formatProgress(current, total) {
-  if (!total || total === 0) return 0;
-  return Math.round((current / total) * 100);
+export function durationToSeconds(duration) {
+  if (!duration) return 0;
+  if (typeof duration === 'number') return duration;
+  
+  const cleaned = String(duration).trim();
+  
+  // Handle YouTube ISO 8601 duration
+  if (cleaned.startsWith('PT')) {
+    const match = cleaned.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (!match) return 0;
+    const h = parseInt(match[1] || 0);
+    const m = parseInt(match[2] || 0);
+    const s = parseInt(match[3] || 0);
+    return h * 3600 + m * 60 + s;
+  }
+  
+  // Handle colon separated formats
+  const parts = cleaned.split(':').map(p => parseInt(p, 10)).filter(n => !isNaN(n));
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  if (parts.length === 1) return parts[0];
+  
+  return 0;
 }

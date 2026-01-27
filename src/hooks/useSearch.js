@@ -7,6 +7,7 @@ import {
   deleteSearchHistory, 
   clearSearchHistory 
 } from "../services/db";
+import { durationToSeconds } from "../utils/formatters";
 
 // Search prefix for audiobook results
 const AUDIOBOOK_PREFIX = "Sách nói";
@@ -66,6 +67,12 @@ export function useSearch() {
     return localStorage.getItem("searchViewMode") || "grid";
   });
   const [history, setHistory] = useState([]);
+  
+  // Use a ref to track the latest filters for use in async search
+  const filtersRef = useRef(filters);
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
 
   // Load search history on mount
   useEffect(() => {
@@ -235,9 +242,12 @@ export function useSearch() {
         try {
           // Add audiobook prefix for better results
           const fullQuery = `${AUDIOBOOK_PREFIX} ${trimmedQuery}`;
+          
+          // Get latest filters from ref to avoid closure issues
+          const currentFilters = filtersRef.current;
 
           // Use YouTube Data API v3 directly with filters
-          const data = await searchVideos(fullQuery, 30, filters);
+          const data = await searchVideos(fullQuery, 30, currentFilters);
 
           // Handle no results
           if (!data || data.length === 0) {
@@ -246,25 +256,19 @@ export function useSearch() {
             return;
           }
 
-          // Client-side filtering for strict duration ranges 
-          // (YouTube API ranges are too broad: <4m, 4-20m, >20m)
+          // Client-side filtering for strict duration ranges
           const filteredResults = data.filter(item => {
-            if (!filters.duration || filters.duration === "all") return true;
+            if (!currentFilters.duration || currentFilters.duration === "all") return true;
             
-            // Parse duration "H:MM:SS" or "MM:SS"
-            const parts = item.duration.split(':').map(Number);
-            let seconds = 0;
-            if (parts.length === 3) {
-              seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
-            } else if (parts.length === 2) {
-              seconds = parts[0] * 60 + parts[1];
-            } else {
-              seconds = parts[0] || 0;
-            }
+            // Skip items with no duration if we are filtering by duration
+            if (!item.duration) return false;
+            
+            const seconds = durationToSeconds(item.duration);
+            if (seconds === 0) return false;
 
-            if (filters.duration === "short") return seconds < 3600; // < 1h
-            if (filters.duration === "medium") return seconds >= 3600 && seconds <= 10800; // 1-3h
-            if (filters.duration === "long") return seconds > 10800; // > 3h
+            if (currentFilters.duration === "short") return seconds < 3600; // < 1h
+            if (currentFilters.duration === "medium") return seconds >= 3600 && seconds <= 10800; // 1-3h
+            if (currentFilters.duration === "long") return seconds > 10800; // > 3h
             return true;
           });
 
@@ -298,7 +302,7 @@ export function useSearch() {
         debounceTimerRef.current = setTimeout(executeSearch, SEARCH_DEBOUNCE);
       }
     },
-    [handleUrlPaste, filters, refreshHistory, parseYouTubeError],
+    [handleUrlPaste, refreshHistory, parseYouTubeError],
   );
 
   /**
