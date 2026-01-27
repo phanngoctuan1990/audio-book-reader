@@ -1,6 +1,12 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { searchVideos, getVideoDetails } from "../services/youtube";
 import { SEARCH_DEBOUNCE } from "../utils/constants";
+import { 
+  addToSearchHistory, 
+  getSearchHistory, 
+  deleteSearchHistory, 
+  clearSearchHistory 
+} from "../services/db";
 
 // Search prefix for audiobook results
 const AUDIOBOOK_PREFIX = "Sách nói";
@@ -59,6 +65,21 @@ export function useSearch() {
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem("searchViewMode") || "grid";
   });
+  const [history, setHistory] = useState([]);
+
+  // Load search history on mount
+  useEffect(() => {
+    const loadHistory = async () => {
+      const data = await getSearchHistory();
+      setHistory(data);
+    };
+    loadHistory();
+  }, []);
+
+  const refreshHistory = useCallback(async () => {
+    const data = await getSearchHistory();
+    setHistory(data);
+  }, []);
 
   const debounceTimerRef = useRef(null);
   const abortControllerRef = useRef(null);
@@ -227,6 +248,10 @@ export function useSearch() {
 
           setResults(data);
           setError(null);
+
+          // Save to search history
+          await addToSearchHistory(trimmedQuery);
+          await refreshHistory();
         } catch (err) {
           // Ignore abort errors
           if (err.name === "AbortError" || err.name === "CanceledError") {
@@ -314,6 +339,22 @@ export function useSearch() {
     }
   }, [query, performSearch]);
 
+  /**
+   * Delete a specific history item
+   */
+  const handleDeleteHistory = useCallback(async (searchQuery) => {
+    await deleteSearchHistory(searchQuery);
+    await refreshHistory();
+  }, [refreshHistory]);
+
+  /**
+   * Clear all search history
+   */
+  const handleClearHistory = useCallback(async () => {
+    await clearSearchHistory();
+    setHistory([]);
+  }, []);
+
   return {
     // State
     query,
@@ -333,6 +374,10 @@ export function useSearch() {
     setFilters: handleFilterChange,
     resetFilters,
     setViewMode: handleViewModeChange,
+    searchHistory: history,
+    deleteHistory: handleDeleteHistory,
+    clearHistory: handleClearHistory,
+    refreshHistory,
     // Utilities
     isYouTubeUrl,
     extractVideoId,

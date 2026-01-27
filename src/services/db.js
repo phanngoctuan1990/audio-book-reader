@@ -45,6 +45,12 @@ async function getDB() {
         if (!db.objectStoreNames.contains(STORES.SETTINGS)) {
           db.createObjectStore(STORES.SETTINGS, { keyPath: 'key' });
         }
+
+        // Search History store
+        if (!db.objectStoreNames.contains(STORES.SEARCH_HISTORY)) {
+          const searchStore = db.createObjectStore(STORES.SEARCH_HISTORY, { keyPath: 'query' });
+          searchStore.createIndex('searchedAt', 'searchedAt');
+        }
       },
     });
   }
@@ -352,4 +358,46 @@ export async function getSetting(key, defaultValue = null) {
   const db = await getDB();
   const item = await db.get(STORES.SETTINGS, key);
   return item?.value ?? defaultValue;
+}
+// ==================== SEARCH HISTORY ====================
+
+/**
+ * Add query to search history
+ * @param {string} query
+ */
+export async function addToSearchHistory(query) {
+  if (!query || !query.trim()) return;
+  const db = await getDB();
+  await db.put(STORES.SEARCH_HISTORY, {
+    query: query.trim(),
+    searchedAt: Date.now(),
+  });
+}
+
+/**
+ * Get search history sorted by most recent
+ * @param {number} limit
+ * @returns {Promise<Array>}
+ */
+export async function getSearchHistory(limit = 10) {
+  const db = await getDB();
+  const all = await db.getAllFromIndex(STORES.SEARCH_HISTORY, 'searchedAt');
+  return all.reverse().slice(0, limit);
+}
+
+/**
+ * Delete a specific query from history
+ * @param {string} query
+ */
+export async function deleteSearchHistory(query) {
+  const db = await getDB();
+  await db.delete(STORES.SEARCH_HISTORY, query);
+}
+
+/**
+ * Clear all search history
+ */
+export async function clearSearchHistory() {
+  const db = await getDB();
+  await db.clear(STORES.SEARCH_HISTORY);
 }

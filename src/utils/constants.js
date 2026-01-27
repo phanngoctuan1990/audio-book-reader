@@ -10,7 +10,7 @@ export const SLEEP_TIMER_OPTIONS = [5, 10, 15, 30, 45, 60, 90];
 
 // IndexedDB config
 export const DB_NAME = "VibeAudioDB";
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 // Store names
 export const STORES = {
@@ -20,6 +20,7 @@ export const STORES = {
   PLAYLISTS: "playlists",
   BOOKMARKS: "bookmarks",
   SETTINGS: "settings",
+  SEARCH_HISTORY: "search_history",
 };
 
 // API config

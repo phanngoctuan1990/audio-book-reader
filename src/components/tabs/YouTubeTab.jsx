@@ -6,6 +6,7 @@ import { useSearch } from "../../hooks/useSearch";
 import SearchBar from "../search/SearchBar";
 import SearchResults from "../search/SearchResults";
 import SearchFilters from "../search/SearchFilters";
+import SearchHistory from "../search/SearchHistory";
 
 function YouTubeTab() {
   const {
@@ -24,6 +25,9 @@ function YouTubeTab() {
     setFilters,
     resetFilters,
     setViewMode,
+    searchHistory,
+    deleteHistory,
+    clearHistory,
   } = useSearch();
 
   return (
@@ -48,6 +52,16 @@ function YouTubeTab() {
               onReset={resetFilters}
             />
           </div>
+        )}
+
+        {/* Search History - show when NOT searching */}
+        {!hasSearched && searchHistory && searchHistory.length > 0 && (
+          <SearchHistory 
+            history={searchHistory}
+            onSelect={setQuery}
+            onDelete={deleteHistory}
+            onClear={clearHistory}
+          />
         )}
       </div>
 
