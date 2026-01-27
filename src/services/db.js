@@ -120,14 +120,19 @@ export async function updatePlayPosition(videoId, position) {
  */
 export async function addToHistory(track, position, duration) {
   const db = await getDB();
+  
+  // Safe progress calculation
+  const safeDuration = duration || track.duration || 0;
+  const progress = safeDuration > 0 ? Math.round((position / safeDuration) * 100) : 0;
+  
   await db.put(STORES.HISTORY, {
     videoId: track.videoId,
     title: track.title,
     author: track.author,
     thumbnail: track.thumbnail,
-    duration,
+    duration: safeDuration,
     lastPosition: position,
-    progress: Math.round((position / duration) * 100),
+    progress: Math.min(progress, 100),
     listenedAt: Date.now(),
   });
 }
@@ -150,8 +155,23 @@ export async function getHistory(limit = 20) {
 export async function getInProgress() {
   const db = await getDB();
   const all = await db.getAllFromIndex(STORES.HISTORY, 'listenedAt');
+  
   return all
-    .filter(item => item.progress > 0 && item.progress < 100)
+    .filter(item => {
+      // Calculate progress if it's missing or NaN
+      let progress = item.progress;
+      if (progress === undefined || isNaN(progress)) {
+        if (item.duration > 0 && item.lastPosition > 0) {
+          progress = Math.round((item.lastPosition / item.duration) * 100);
+        } else {
+          progress = 0;
+        }
+      }
+      
+      // We consider it "in progress" if they've listened at least 1% and haven't reached 99%
+      // Or if they've listened for more than 10 seconds
+      return (progress > 0 && progress < 99) || (item.lastPosition > 10 && progress < 99);
+    })
     .reverse();
 }
 

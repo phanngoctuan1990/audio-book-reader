@@ -205,7 +205,7 @@ export function YouTubePlayerProvider({ children }) {
   useEffect(() => {
     if (state.isPlaying && state.currentTrack) {
       saveIntervalRef.current = setInterval(() => {
-        if (state.currentTrack?.videoId && state.currentTime > 0) {
+        if (state.currentTrack?.videoId && state.currentTime > 0 && state.duration > 0) {
           updatePlayPosition(state.currentTrack.videoId, state.currentTime);
           addToHistory(state.currentTrack, state.currentTime, state.duration);
         }
