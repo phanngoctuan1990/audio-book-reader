@@ -144,6 +144,18 @@ export async function getHistory(limit = 20) {
 }
 
 /**
+ * Get tracks that are in progress (progress > 0 and < 100)
+ * @returns {Promise<Array>}
+ */
+export async function getInProgress() {
+  const db = await getDB();
+  const all = await db.getAllFromIndex(STORES.HISTORY, 'listenedAt');
+  return all
+    .filter(item => item.progress > 0 && item.progress < 100)
+    .reverse();
+}
+
+/**
  * Clear all history
  */
 export async function clearHistory() {

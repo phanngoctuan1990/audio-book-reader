@@ -25,7 +25,7 @@ import {
   getPlayerState,
   PlayerState,
 } from "../services/youtube";
-import { getAudiobook, updatePlayPosition, addToHistory } from "../services/db";
+import { getAudiobook, updatePlayPosition, addToHistory, getHistory } from "../services/db";
 import { POSITION_SAVE_INTERVAL } from "../utils/constants";
 import {
   setupMediaSession,
@@ -391,10 +391,22 @@ export function YouTubePlayerProvider({ children }) {
     dispatch({ type: ACTIONS.SET_ERROR, payload: null });
 
     try {
-      // Check for saved position
-      const cached = await getAudiobook(track.videoId);
-      if (cached?.lastPosition > 0 && startPosition === 0) {
-        startPosition = cached.lastPosition;
+      // Save as last track for session recovery
+      localStorage.setItem("lastTrack", JSON.stringify(track));
+
+      // Check for saved position in both stores
+      if (startPosition === 0) {
+        const cached = await getAudiobook(track.videoId);
+        if (cached?.lastPosition > 0) {
+          startPosition = cached.lastPosition;
+        } else {
+          // Fallback to history
+          const history = await getHistory(50);
+          const historyData = history.find(h => h.videoId === track.videoId);
+          if (historyData?.lastPosition > 0) {
+            startPosition = historyData.lastPosition;
+          }
+        }
       }
 
       // If player exists, just load new video
@@ -424,8 +436,16 @@ export function YouTubePlayerProvider({ children }) {
   };
 
   const play = () => {
-    playVideo();
-    dispatch({ type: ACTIONS.SET_PLAYING, payload: true });
+    if (state.currentTrack && (!playerRef.current || !state.isPlayerReady)) {
+      // If we have a track but player isn't ready (e.g. after reload), load it
+      loadTrack(state.currentTrack, state.currentTime);
+      return;
+    }
+    
+    if (playerRef.current && state.isPlayerReady) {
+      playVideo();
+      dispatch({ type: ACTIONS.SET_PLAYING, payload: true });
+    }
   };
 
   const pause = () => {
