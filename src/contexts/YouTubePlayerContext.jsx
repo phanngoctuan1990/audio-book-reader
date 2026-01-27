@@ -136,6 +136,12 @@ export function YouTubePlayerProvider({ children }) {
   const timeUpdateRef = useRef(null);
   const saveIntervalRef = useRef(null);
   const backgroundManagerRef = useRef(null);
+  const stateRef = useRef(state);
+
+  // Sync stateRef with state
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   // Initialize background manager
   useEffect(() => {
@@ -205,9 +211,10 @@ export function YouTubePlayerProvider({ children }) {
   useEffect(() => {
     if (state.isPlaying && state.currentTrack) {
       saveIntervalRef.current = setInterval(() => {
-        if (state.currentTrack?.videoId && state.currentTime > 0 && state.duration > 0) {
-          updatePlayPosition(state.currentTrack.videoId, state.currentTime);
-          addToHistory(state.currentTrack, state.currentTime, state.duration);
+        const { currentTrack, currentTime, duration } = stateRef.current;
+        if (currentTrack?.videoId && currentTime > 0 && duration > 0) {
+          updatePlayPosition(currentTrack.videoId, currentTime);
+          addToHistory(currentTrack, currentTime, duration);
         }
       }, POSITION_SAVE_INTERVAL);
     }
@@ -219,9 +226,7 @@ export function YouTubePlayerProvider({ children }) {
     };
   }, [
     state.isPlaying,
-    state.currentTrack?.videoId,
-    state.currentTime,
-    state.duration,
+    state.currentTrack?.videoId
   ]);
 
   // Enhanced Media Session API integration
