@@ -1,5 +1,6 @@
-import { openDB } from 'idb';
-import { DB_NAME, DB_VERSION, STORES } from '../utils/constants';
+import { openDB } from "idb";
+import { calculateProgress } from "../utils/formatters";
+import { DB_NAME, DB_VERSION, STORES, PLAYER_CONFIG } from "../utils/constants";
 
 let dbPromise = null;
 
@@ -13,43 +14,53 @@ async function getDB() {
       upgrade(db) {
         // Audiobooks store (for offline cache)
         if (!db.objectStoreNames.contains(STORES.AUDIOBOOKS)) {
-          db.createObjectStore(STORES.AUDIOBOOKS, { keyPath: 'videoId' });
+          db.createObjectStore(STORES.AUDIOBOOKS, { keyPath: "videoId" });
         }
 
         // History store
         if (!db.objectStoreNames.contains(STORES.HISTORY)) {
-          const historyStore = db.createObjectStore(STORES.HISTORY, { keyPath: 'videoId' });
-          historyStore.createIndex('listenedAt', 'listenedAt');
+          const historyStore = db.createObjectStore(STORES.HISTORY, {
+            keyPath: "videoId",
+          });
+          historyStore.createIndex("listenedAt", "listenedAt");
         }
 
         // Favorites store
         if (!db.objectStoreNames.contains(STORES.FAVORITES)) {
-          const favStore = db.createObjectStore(STORES.FAVORITES, { keyPath: 'videoId' });
-          favStore.createIndex('addedAt', 'addedAt');
+          const favStore = db.createObjectStore(STORES.FAVORITES, {
+            keyPath: "videoId",
+          });
+          favStore.createIndex("addedAt", "addedAt");
         }
 
         // Playlists store
         if (!db.objectStoreNames.contains(STORES.PLAYLISTS)) {
-          const playlistStore = db.createObjectStore(STORES.PLAYLISTS, { keyPath: 'id' });
-          playlistStore.createIndex('createdAt', 'createdAt');
+          const playlistStore = db.createObjectStore(STORES.PLAYLISTS, {
+            keyPath: "id",
+          });
+          playlistStore.createIndex("createdAt", "createdAt");
         }
 
         // Bookmarks store
         if (!db.objectStoreNames.contains(STORES.BOOKMARKS)) {
-          const bookmarkStore = db.createObjectStore(STORES.BOOKMARKS, { keyPath: 'id' });
-          bookmarkStore.createIndex('videoId', 'videoId');
-          bookmarkStore.createIndex('createdAt', 'createdAt');
+          const bookmarkStore = db.createObjectStore(STORES.BOOKMARKS, {
+            keyPath: "id",
+          });
+          bookmarkStore.createIndex("videoId", "videoId");
+          bookmarkStore.createIndex("createdAt", "createdAt");
         }
 
         // Settings store
         if (!db.objectStoreNames.contains(STORES.SETTINGS)) {
-          db.createObjectStore(STORES.SETTINGS, { keyPath: 'key' });
+          db.createObjectStore(STORES.SETTINGS, { keyPath: "key" });
         }
 
         // Search History store
         if (!db.objectStoreNames.contains(STORES.SEARCH_HISTORY)) {
-          const searchStore = db.createObjectStore(STORES.SEARCH_HISTORY, { keyPath: 'query' });
-          searchStore.createIndex('searchedAt', 'searchedAt');
+          const searchStore = db.createObjectStore(STORES.SEARCH_HISTORY, {
+            keyPath: "query",
+          });
+          searchStore.createIndex("searchedAt", "searchedAt");
         }
       },
     });
@@ -73,7 +84,7 @@ export async function saveAudiobook(data) {
 
 /**
  * Get audiobook from offline cache
- * @param {string} videoId 
+ * @param {string} videoId
  * @returns {Promise<Object|undefined>}
  */
 export async function getAudiobook(videoId) {
@@ -92,7 +103,7 @@ export async function getAllAudiobooks() {
 
 /**
  * Delete audiobook from offline cache
- * @param {string} videoId 
+ * @param {string} videoId
  */
 export async function deleteAudiobook(videoId) {
   const db = await getDB();
@@ -101,7 +112,7 @@ export async function deleteAudiobook(videoId) {
 
 /**
  * Update play position for an audiobook
- * @param {string} videoId 
+ * @param {string} videoId
  * @param {number} position - Current position in seconds
  */
 export async function updatePlayPosition(videoId, position) {
@@ -126,11 +137,11 @@ export async function updatePlayPosition(videoId, position) {
  */
 export async function addToHistory(track, position, duration) {
   const db = await getDB();
-  
+
   // Safe progress calculation
   const safeDuration = duration || track.duration || 0;
-  const progress = safeDuration > 0 ? Math.round((position / safeDuration) * 100) : 0;
-  
+  const progress = calculateProgress(position, safeDuration);
+
   await db.put(STORES.HISTORY, {
     videoId: track.videoId,
     title: track.title,
@@ -150,7 +161,7 @@ export async function addToHistory(track, position, duration) {
  */
 export async function getHistory(limit = 20) {
   const db = await getDB();
-  const all = await db.getAllFromIndex(STORES.HISTORY, 'listenedAt');
+  const all = await db.getAllFromIndex(STORES.HISTORY, "listenedAt");
   return all.reverse().slice(0, limit);
 }
 
@@ -160,23 +171,27 @@ export async function getHistory(limit = 20) {
  */
 export async function getInProgress() {
   const db = await getDB();
-  const all = await db.getAllFromIndex(STORES.HISTORY, 'listenedAt');
-  
+  const all = await db.getAllFromIndex(STORES.HISTORY, "listenedAt");
+
   return all
-    .filter(item => {
+    .filter((item) => {
       // Calculate progress if it's missing or NaN
       let progress = item.progress;
       if (progress === undefined || isNaN(progress)) {
-        if (item.duration > 0 && item.lastPosition > 0) {
-          progress = Math.round((item.lastPosition / item.duration) * 100);
-        } else {
-          progress = 0;
-        }
+        progress = calculateProgress(item.lastPosition, item.duration);
       }
-      
-      // We consider it "in progress" if they've listened at least 1% and haven't reached 99%
-      // Or if they've listened for more than 10 seconds
-      return (progress > 0 && progress < 99) || (item.lastPosition > 10 && progress < 99);
+
+      // We consider it "in progress" if they've listened at least 1% and haven't reached the threshold
+      // Or if they've listened for more than the minimum seconds threshold
+      const isStillProgressing =
+        progress > 0 && progress < PLAYER_CONFIG.PROGRESS_FINISHED_THRESHOLD;
+      const isSignificantTime =
+        item.lastPosition > PLAYER_CONFIG.IN_PROGRESS_MIN_SECONDS;
+
+      return (
+        (isStillProgressing || isSignificantTime) &&
+        progress < PLAYER_CONFIG.PROGRESS_FINISHED_THRESHOLD
+      );
     })
     .reverse();
 }
@@ -209,7 +224,7 @@ export async function addFavorite(track) {
 
 /**
  * Remove from favorites
- * @param {string} videoId 
+ * @param {string} videoId
  */
 export async function removeFavorite(videoId) {
   const db = await getDB();
@@ -222,13 +237,13 @@ export async function removeFavorite(videoId) {
  */
 export async function getFavorites() {
   const db = await getDB();
-  const all = await db.getAllFromIndex(STORES.FAVORITES, 'addedAt');
+  const all = await db.getAllFromIndex(STORES.FAVORITES, "addedAt");
   return all.reverse();
 }
 
 /**
  * Check if item is favorited
- * @param {string} videoId 
+ * @param {string} videoId
  * @returns {Promise<boolean>}
  */
 export async function isFavorite(videoId) {
@@ -268,8 +283,8 @@ export async function getPlaylists() {
 
 /**
  * Add item to playlist
- * @param {string} playlistId 
- * @param {Object} track 
+ * @param {string} playlistId
+ * @param {Object} track
  */
 export async function addToPlaylist(playlistId, track) {
   const db = await getDB();
@@ -290,7 +305,7 @@ export async function addToPlaylist(playlistId, track) {
 
 /**
  * Delete playlist
- * @param {string} playlistId 
+ * @param {string} playlistId
  */
 export async function deletePlaylist(playlistId) {
   const db = await getDB();
@@ -301,11 +316,11 @@ export async function deletePlaylist(playlistId) {
 
 /**
  * Add bookmark
- * @param {string} videoId 
+ * @param {string} videoId
  * @param {number} position - Position in seconds
  * @param {string} note - Optional note
  */
-export async function addBookmark(videoId, position, note = '') {
+export async function addBookmark(videoId, position, note = "") {
   const db = await getDB();
   await db.put(STORES.BOOKMARKS, {
     id: crypto.randomUUID(),
@@ -318,18 +333,20 @@ export async function addBookmark(videoId, position, note = '') {
 
 /**
  * Get bookmarks for a video
- * @param {string} videoId 
+ * @param {string} videoId
  * @returns {Promise<Array>}
  */
 export async function getBookmarks(videoId) {
   const db = await getDB();
-  const all = await db.getAllFromIndex(STORES.BOOKMARKS, 'videoId');
-  return all.filter(b => b.videoId === videoId).sort((a, b) => a.position - b.position);
+  const all = await db.getAllFromIndex(STORES.BOOKMARKS, "videoId");
+  return all
+    .filter((b) => b.videoId === videoId)
+    .sort((a, b) => a.position - b.position);
 }
 
 /**
  * Delete bookmark
- * @param {string} bookmarkId 
+ * @param {string} bookmarkId
  */
 export async function deleteBookmark(bookmarkId) {
   const db = await getDB();
@@ -340,8 +357,8 @@ export async function deleteBookmark(bookmarkId) {
 
 /**
  * Save setting
- * @param {string} key 
- * @param {any} value 
+ * @param {string} key
+ * @param {any} value
  */
 export async function saveSetting(key, value) {
   const db = await getDB();
@@ -350,8 +367,8 @@ export async function saveSetting(key, value) {
 
 /**
  * Get setting
- * @param {string} key 
- * @param {any} defaultValue 
+ * @param {string} key
+ * @param {any} defaultValue
  * @returns {Promise<any>}
  */
 export async function getSetting(key, defaultValue = null) {
@@ -381,7 +398,7 @@ export async function addToSearchHistory(query) {
  */
 export async function getSearchHistory(limit = 10) {
   const db = await getDB();
-  const all = await db.getAllFromIndex(STORES.SEARCH_HISTORY, 'searchedAt');
+  const all = await db.getAllFromIndex(STORES.SEARCH_HISTORY, "searchedAt");
   return all.reverse().slice(0, limit);
 }
 

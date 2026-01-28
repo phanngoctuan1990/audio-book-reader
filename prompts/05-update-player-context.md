@@ -1,41 +1,37 @@
-# Prompt 5: Update Player Context
+# ⚠️ OBSOLETE - Player Context Update
 
-## Mục tiêu
-Sửa file `src/contexts/PlayerContext.jsx` để sử dụng YouTube Player thay vì HTML5 Audio.
+## 🚫 Status: OBSOLETE
+**This prompt is no longer needed in v2.0 architecture.**
 
-## Yêu cầu
-Update file `src/contexts/PlayerContext.jsx`:
+## 🔄 Replacement
+This functionality has been replaced by:
+- `02-youtube-player-context.md` - Modular hook architecture
+- Hook composition pattern instead of monolithic context
 
-### Replace Audio Element
-- Remove `audioRef` và HTML5 Audio logic
-- Integrate với YouTubePlayerContext
-- Update all player methods để work với YouTube Player
+## 📋 What This Prompt Did (v1.0)
+- Updated PlayerContext for YouTube integration
+- Replaced HTML5 Audio with YouTube Player
+- Maintained backward compatibility
 
-### State Management
-- Maintain existing state structure
-- Update state updates để sync với YouTube Player
-- Keep existing action types và reducer
+## ✅ v2.0 Equivalent
+The v2.0 architecture uses:
+```javascript
+// Instead of updating PlayerContext, we now use:
+src/contexts/YouTubePlayerContext.jsx - Main context (223 lines)
+src/hooks/useYouTubePlayerCore.js - Core player logic
+src/hooks/usePlayerQueue.js - Queue management
+src/hooks/usePlayerPersistence.js - Settings persistence
+src/hooks/usePlayerBackground.js - Background features
+```
 
-### Player Methods
-Update các methods:
-- `loadTrack()` - Load YouTube video
-- `play()`, `pause()`, `toggle()` - YouTube player controls
-- `seek()`, `seekBy()` - YouTube seek functions
-- `setSpeed()` - YouTube playback rate (nếu supported)
-- `setVolume()` - YouTube volume control
+## 🎯 Migration
+If you need backward compatibility:
+```javascript
+// src/contexts/PlayerContext.jsx (wrapper)
+export const usePlayer = () => {
+  return useYouTubePlayer(); // Delegates to new context
+};
+```
 
-### Event Handling
-- Replace HTML5 audio events với YouTube player events
-- Handle YouTube player state changes
-- Update Media Session API integration
-
-### Compatibility
-- Keep existing function signatures
-- Maintain compatibility với existing components
-- Preserve auto-save position logic
-- Keep queue management functions
-
-## Lưu ý
-- Minimal refactor, preserve existing interface
-- Update only player implementation, not the API
-- Handle YouTube-specific limitations (no offline, etc.)
+---
+**Skip this prompt - use 02-youtube-player-context.md instead**

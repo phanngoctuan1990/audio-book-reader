@@ -1,23 +1,125 @@
-# 📁 Project Structure Guide
+# 📁 Project Structure Guide v2.0
 
 ## 🎯 Overview
-Complete file structure for AudioBookReader v2.0 with explanations for each component.
+Complete file structure for AudioBookReader v2.0 with modular hook architecture.
+
+## 🏗️ **v2.0 Architecture Highlights**
+- **Modular Hooks**: Features separated into dedicated hooks
+- **Context Splitting**: Performance optimization with state/actions separation  
+- **Constants Centralized**: All config in `constants.js`
+- **65% Code Reduction**: Main context reduced from 640 → 223 lines
 
 ## 📂 Root Structure
 ```
 AudioBookReader/
-├── 📁 public/                    # Static assets
-│   ├── 📁 icons/                 # PWA icons
-│   │   ├── icon-192x192.png
-│   │   └── icon-512x512.png
-│   └── favicon.ico
-├── 📁 src/                       # Source code
-├── 📁 docs/                      # Documentation
-├── 📁 prompts/                   # Implementation prompts
+├── 📁 public/                    # Static assets & PWA
+│   ├── 📁 icons/                 # Complete PWA icon set
+│   │   ├── icon-72x72.png → icon-512x512.png
+│   │   ├── apple-touch-icon.png
+│   │   └── search-96x96.png, library-96x96.png, heart-96x96.png
+│   ├── manifest.json             # PWA manifest with shortcuts
+│   └── sw.js                     # Service worker
+├── 📁 src/                       # Source code (v2.0 architecture)
+├── 📁 docs/                      # Documentation (updated)
+├── 📁 prompts/                   # Implementation prompts (v2.0)
 ├── 📄 package.json               # Dependencies
 ├── 📄 vite.config.js            # Build configuration
-├── 📄 tailwind.config.js        # Styling configuration
-├── 📄 .env.example              # Environment template
+├── 📄 tailwind.config.js        # Soft Gold theme
+└── 📄 .env                      # Environment variables
+```
+
+## 📂 **Source Structure (v2.0)**
+```
+src/
+├── 📁 components/               # UI Components
+│   ├── 📁 common/              # Shared components
+│   │   ├── BookCard.jsx        # 3D book cards
+│   │   ├── BottomNav.jsx       # 4-tab navigation
+│   │   └── EmptyState.jsx      # Empty state component
+│   ├── 📁 player/              # Player components
+│   │   ├── EnhancedMiniPlayer.jsx    # Enhanced mini player
+│   │   ├── FullPlayerView.jsx        # Full player view
+│   │   ├── ProgressBar.jsx           # Interactive progress bar
+│   │   ├── TrackInfo.jsx             # Track information
+│   │   ├── PlayingAnimation.jsx      # Bouncing bars animation
+│   │   └── BackgroundPlaybackInfo.jsx # User education modal
+│   └── 📁 radio/               # Radio components
+├── 📁 contexts/                # React Contexts (v2.0)
+│   ├── YouTubePlayerContext.jsx # Main player context (223 lines)
+│   ├── PlayerReducer.js        # State management
+│   ├── PlayerContext.jsx       # Legacy wrapper
+│   ├── RadioContext.jsx        # Radio context
+│   └── PlaylistContext.jsx     # Playlist context
+├── 📁 hooks/                   # Custom Hooks (v2.0 Modular)
+│   ├── useYouTubePlayerCore.js # Player instance & events
+│   ├── usePlayerQueue.js       # Queue, shuffle, repeat
+│   ├── usePlayerPersistence.js # localStorage sync
+│   ├── usePlayerBackground.js  # Media session, wake lock
+│   └── useSearch.js           # Search functionality
+├── 📁 services/               # Business Logic
+│   ├── youtube.js             # YouTube API (with helpers)
+│   ├── db.js                  # IndexedDB operations
+│   ├── mediaSession.js        # Lock screen controls
+│   ├── backgroundPlayback.js  # Background manager
+│   └── wakeLock.js           # Power management
+├── 📁 utils/                  # Utilities (v2.0)
+│   ├── constants.js           # ALL app constants (NO magic numbers)
+│   ├── formatters.js          # Data formatting functions
+│   └── errors.js              # Error handling utilities
+├── 📁 pages/                  # Page Components
+│   ├── Home.jsx               # Home page with tabs
+│   ├── Radio.jsx              # Radio streaming
+│   ├── Library.jsx            # Library with InProgress tab
+│   └── Favorites.jsx          # Favorites page
+└── 📄 main.jsx                # App entry point
+```
+
+## 🎯 **Key v2.0 Changes**
+
+### **Modular Hooks Architecture**
+```javascript
+// Before: Monolithic context (640 lines)
+YouTubePlayerContext.jsx - Everything in one file
+
+// After: Modular hooks (223 lines main + focused hooks)
+├── useYouTubePlayerCore.js    # Player instance
+├── usePlayerQueue.js          # Queue management  
+├── usePlayerPersistence.js    # Storage sync
+└── usePlayerBackground.js     # Background features
+```
+
+### **Constants Centralization**
+```javascript
+// Before: Magic numbers everywhere
+setInterval(updateTime, 250);
+if (progress > 99) { /* finished */ }
+
+// After: Centralized constants
+import { PLAYER_CONFIG } from "../utils/constants";
+setInterval(updateTime, PLAYER_CONFIG.TIME_UPDATE_INTERVAL);
+if (progress > PLAYER_CONFIG.PROGRESS_FINISHED_THRESHOLD) { /* finished */ }
+```
+
+### **Context Splitting for Performance**
+```javascript
+// Before: Single context (re-renders on every state change)
+const { currentTrack, play, currentTime } = usePlayer();
+
+// After: Split contexts (optimized re-renders)
+const { currentTrack, currentTime } = useContext(PlayerStateContext); // State
+const { play } = useContext(PlayerActionsContext); // Actions (stable)
+```
+
+## 📊 **Architecture Benefits**
+- ✅ **65% code reduction** in main context
+- ✅ **Performance optimized** with context splitting
+- ✅ **Independently testable** hooks
+- ✅ **Easy feature additions** with hook composition
+- ✅ **Zero magic numbers** with constants centralization
+
+---
+
+**Project structure optimized for v2.0 modular architecture** 🏆
 └── 📄 README.md                 # Project overview
 ```
 

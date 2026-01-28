@@ -1,6 +1,10 @@
-Role: Senior Frontend Engineer & UX Specialist (Vibe Coding Expert)
-Project Name: "Vibe Audio" - Music-CLI Style PWA
-Objective: Build a mobile-first PWA for listening to audiobooks via YouTube Audio Streams (No Video, No Ads).
+## SECTION 0: CRITICAL GIT APPROVAL POLICY (QUY TẮC TỐI THƯỢNG)
+
+**DỪNG LẠI! TRƯỚC KHI THỰC HIỆN BẤT KỲ LỆNH GIT NÀO:**
+
+1. **COMMIT**: Tuyệt đối KHÔNG được `git commit` nếu chưa được USER xem qua code và nói "OK commit" hoặc "Approve".
+2. **PUSH**: Tuyệt đối KHÔNG được `git push` nếu chưa được USER xác nhận rõ ràng bằng câu lệnh "Đẩy code lên main" hoặc tương đương.
+3. **MỌI SAI PHẠM**: Sẽ làm mất lòng tin hoàn toàn của USER và là hành vi không thể chấp nhận được.
 
 ---
 
@@ -28,50 +32,46 @@ Objective: Build a mobile-first PWA for listening to audiobooks via YouTube Audi
 
 ### File Naming
 
-| Loại | Convention | Ví dụ |
-|------|------------|-------|
-| Components | `PascalCase.jsx` | `SearchBar.jsx`, `MiniPlayer.jsx` |
-| Hooks | `camelCase.js` với prefix `use` | `useAudio.js`, `useSearch.js` |
-| Contexts | `PascalCase.jsx` với suffix `Context` | `PlayerContext.jsx` |
-| Services | `camelCase.js` | `api.js`, `db.js` |
-| Utils | `camelCase.js` | `formatters.js`, `constants.js` |
-| Pages | `PascalCase.jsx` | `Home.jsx`, `Library.jsx` |
+| Loại       | Convention                            | Ví dụ                             |
+| ---------- | ------------------------------------- | --------------------------------- |
+| Components | `PascalCase.jsx`                      | `SearchBar.jsx`, `MiniPlayer.jsx` |
+| Hooks      | `camelCase.js` với prefix `use`       | `useAudio.js`, `useSearch.js`     |
+| Contexts   | `PascalCase.jsx` với suffix `Context` | `PlayerContext.jsx`               |
+| Services   | `camelCase.js`                        | `api.js`, `db.js`                 |
+| Utils      | `camelCase.js`                        | `formatters.js`, `constants.js`   |
+| Pages      | `PascalCase.jsx`                      | `Home.jsx`, `Library.jsx`         |
 
 ### Component Structure
 
 ```jsx
 // 1. Imports (theo thứ tự)
-import { useState, useEffect } from 'react';      // React core
-import { usePlayer } from '../contexts/...';      // Contexts
-import { useSearch } from '../hooks/...';         // Hooks
-import { formatTime } from '../utils/...';        // Utils
-import ChildComponent from './ChildComponent';    // Components
+import { useState, useEffect } from "react"; // React core
+import { usePlayer } from "../contexts/..."; // Contexts
+import { useSearch } from "../hooks/..."; // Hooks
+import { formatTime } from "../utils/..."; // Utils
+import ChildComponent from "./ChildComponent"; // Components
 
 // 2. Component definition
 function ComponentName({ prop1, prop2 }) {
   // 2.1 Hooks đầu tiên
   const [state, setState] = useState(null);
   const { data } = usePlayer();
-  
+
   // 2.2 Effects
   useEffect(() => {
     // ...
   }, []);
-  
+
   // 2.3 Handlers
   const handleClick = () => {
     // ...
   };
-  
+
   // 2.4 Early returns (loading, error, empty)
   if (!data) return <Skeleton />;
-  
+
   // 2.5 Main render
-  return (
-    <div className="...">
-      {/* JSX */}
-    </div>
-  );
+  return <div className="...">{/* JSX */}</div>;
 }
 
 // 3. Export
@@ -108,7 +108,7 @@ const [isOpen, setIsOpen] = useState(false);
 const { isPlaying, toggle } = usePlayer();
 
 // ✅ localStorage cho user preferences
-localStorage.setItem('playbackSpeed', speed);
+localStorage.setItem("playbackSpeed", speed);
 
 // ✅ IndexedDB cho large data (audio blobs, history)
 await saveAudiobook(data);
@@ -123,8 +123,8 @@ await saveAudiobook(data);
 try {
   const data = await fetchData();
 } catch (error) {
-  console.error('Fetch failed:', error);
-  toast.error('Không thể tải dữ liệu. Vui lòng thử lại.');
+  console.error("Fetch failed:", error);
+  toast.error("Không thể tải dữ liệu. Vui lòng thử lại.");
 }
 
 // ✅ Loading & Error states
@@ -162,12 +162,14 @@ useEffect(() => {
 // ✅ Cleanup cho async operations
 useEffect(() => {
   let cancelled = false;
-  
-  fetchData().then(data => {
+
+  fetchData().then((data) => {
     if (!cancelled) setData(data);
   });
-  
-  return () => { cancelled = true; };
+
+  return () => {
+    cancelled = true;
+  };
 }, []);
 ```
 
@@ -198,12 +200,13 @@ async function getStream(videoId) {}
 
 // ✅ Comment cho logic phức tạp
 // Ưu tiên m4a cho iOS compatibility, fallback sang webm
-const audioStream = streams.find(s => s.mimeType.includes('m4a')) 
-                 || streams.find(s => s.mimeType.includes('webm'));
+const audioStream =
+  streams.find((s) => s.mimeType.includes("m4a")) ||
+  streams.find((s) => s.mimeType.includes("webm"));
 
 // ❌ KHÔNG comment obvious code
 // Set loading to true
-setLoading(true);  // ❌ Không cần
+setLoading(true); // ❌ Không cần
 ```
 
 ### Import/Export Rules
@@ -218,8 +221,8 @@ export default function Player() {}
 
 // ✅ Barrel exports cho folders (index.js)
 // components/common/index.js
-export { default as Button } from './Button';
-export { default as Modal } from './Modal';
+export { default as Button } from "./Button";
+export { default as Modal } from "./Modal";
 
 // ❌ KHÔNG mix default và named trong cùng file
 ```
@@ -244,10 +247,10 @@ chore: Update dependencies
 ```javascript
 // YouTube Data API v3 for search
 const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
-const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
+const YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3";
 
 // YouTube IFrame Player API for playback
-const YOUTUBE_IFRAME_API = 'https://www.youtube.com/iframe_api';
+const YOUTUBE_IFRAME_API = "https://www.youtube.com/iframe_api";
 ```
 
 **Integration Strategy:**
@@ -380,16 +383,16 @@ Tham khảo chi tiết prompts trong thư mục `/prompts` để implement từn
 
 ## PROMPTS ROADMAP (Updated for YouTube Integration)
 
-| Prompt | Nội dung | Workflow |
-|--------|----------|----------|
-| **01-youtube-service.md** | YouTube Service + IFrame Player API | Core Integration |
-| **02-youtube-player-context.md** | YouTube Player Context + State Management | Player Setup |
-| **03-youtube-player-component.md** | YouTube Player Component + Custom Controls | UI Layer |
-| **04-update-search-hook.md** | Search Hook + YouTube Data API v3 | Search Feature |
-| **05-update-player-context.md** | Player Context Integration | Compatibility |
-| **06-update-api-service.md** | API Service Migration | API Layer |
-| **07-update-components.md** | Component Updates | UI Updates |
-| **08-environment-config.md** | Environment Setup + API Keys | Configuration |
-| **09-testing-cleanup.md** | Testing + Cleanup | Finalization |
+| Prompt                             | Nội dung                                   | Workflow         |
+| ---------------------------------- | ------------------------------------------ | ---------------- |
+| **01-youtube-service.md**          | YouTube Service + IFrame Player API        | Core Integration |
+| **02-youtube-player-context.md**   | YouTube Player Context + State Management  | Player Setup     |
+| **03-youtube-player-component.md** | YouTube Player Component + Custom Controls | UI Layer         |
+| **04-update-search-hook.md**       | Search Hook + YouTube Data API v3          | Search Feature   |
+| **05-update-player-context.md**    | Player Context Integration                 | Compatibility    |
+| **06-update-api-service.md**       | API Service Migration                      | API Layer        |
+| **07-update-components.md**        | Component Updates                          | UI Updates       |
+| **08-environment-config.md**       | Environment Setup + API Keys               | Configuration    |
+| **09-testing-cleanup.md**          | Testing + Cleanup                          | Finalization     |
 
 **Thứ tự thực hiện:** `01` → `02` → `03` → `04` → `05` → `06` → `07` → `08` → `09`

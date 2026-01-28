@@ -1,23 +1,122 @@
-# 🎵 AudioBookReader v2.0 - Complete Implementation Guide
+# 🎵 AudioBookReader v2.0 - Implementation Guide
 
 ## 📋 Project Overview
 
-**AudioBookReader v2.0** là một Progressive Web App (PWA) để nghe sách nói từ YouTube với giao diện tối giản, mobile-first design.
+**AudioBookReader v2.0** là một Progressive Web App (PWA) để nghe sách nói từ YouTube với kiến trúc modular hooks và performance tối ưu.
+
+## 🏗️ **v2.0 Architecture Highlights**
+- ✅ **Modular Hook Architecture** - 65% code reduction
+- ✅ **Context Splitting** - Performance optimization  
+- ✅ **Constants Centralized** - No magic numbers
+- ✅ **Background Audio** - Lock screen controls
+- ✅ **PWA Complete** - Offline support, shortcuts
 
 ### 🎯 Core Features
-- ✅ Search sách nói trên YouTube
-- ✅ YouTube IFrame Player với custom controls
-- ✅ Queue management và playlist
-- ✅ Progress tracking và resume
-- ✅ PWA với offline caching
-- ✅ Mobile-optimized UI
+- ✅ Search sách nói trên YouTube với constants
+- ✅ YouTube Player với modular hooks
+- ✅ Queue management với dedicated hook
+- ✅ Progress tracking với auto-persistence
+- ✅ Background playback với Media Session API
+- ✅ PWA với complete icon set và shortcuts
+- ✅ Soft Gold theme với accessibility
 
 ### 🔧 Tech Stack
 - **Frontend**: React 18 + Vite
-- **Styling**: Tailwind CSS (mobile-first)
+- **Styling**: Tailwind CSS (Soft Gold theme)
 - **Player**: YouTube IFrame Player API
-- **Search**: YouTube Data API v3
-- **Storage**: IndexedDB (metadata caching)
+- **Search**: YouTube Data API v3  
+- **Storage**: IndexedDB + localStorage (auto-sync)
+- **PWA**: Service Worker + Manifest
+- **Architecture**: Modular hooks + Context splitting
+
+## 🚀 **Quick Start**
+
+### 1. Environment Setup
+```bash
+# Clone repository
+git clone <repo-url>
+cd AudioBookReader
+
+# Install dependencies  
+npm install
+
+# Setup environment
+cp .env.example .env
+# Add your YouTube API key to .env
+```
+
+### 2. YouTube API Setup
+Follow **[YOUTUBE_API_SETUP.md](./YOUTUBE_API_SETUP.md)** for complete API configuration.
+
+### 3. Development
+```bash
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+## 🏗️ **v2.0 Architecture Overview**
+
+### **Modular Hook System**
+```javascript
+// Main Context (223 lines - 65% reduction)
+YouTubePlayerContext.jsx
+├── useYouTubePlayerCore.js    # Player instance & events
+├── usePlayerQueue.js          # Queue, shuffle, repeat  
+├── usePlayerPersistence.js    # Auto localStorage sync
+└── usePlayerBackground.js     # Media session, wake lock
+```
+
+### **Performance Optimization**
+```javascript
+// Context splitting prevents unnecessary re-renders
+const { currentTrack } = useContext(PlayerStateContext); // State
+const { play } = useContext(PlayerActionsContext); // Actions (stable)
+```
+
+### **Constants Management**
+```javascript
+// All configuration centralized
+import { PLAYER_CONFIG, STORAGE_KEYS } from "../utils/constants";
+```
+
+## 📱 **PWA Features**
+- **Complete Icon Set**: 72x72 → 512x512 + shortcuts
+- **Service Worker**: Caching + background sync
+- **Manifest**: Shortcuts for quick access
+- **Background Audio**: Lock screen controls
+- **Offline Support**: Metadata caching
+
+## 🎨 **UI/UX Features**
+- **Soft Gold Theme**: Accessible color palette
+- **Context Splitting**: Optimized re-renders
+- **Touch-Friendly**: 44px minimum touch targets
+- **Responsive**: Mobile-first design
+- **Animations**: 60fps CSS transforms
+
+## 📊 **Performance Benefits**
+- **65% Code Reduction**: 640 → 223 lines in main context
+- **Render Optimization**: Context splitting prevents unnecessary updates
+- **Memory Efficiency**: Proper cleanup in modular hooks
+- **Bundle Optimization**: Tree-shaking with modular structure
+
+## 🧪 **Testing Strategy**
+- **Hook Testing**: Each hook independently testable
+- **Integration Testing**: Context interactions
+- **Performance Testing**: Render count monitoring
+- **PWA Testing**: Offline functionality
+
+## 🚀 **Deployment**
+Follow **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** for hosting setup.
+
+---
+
+**Complete implementation guide for v2.0 modular architecture** 🏆
 - **PWA**: Vite PWA plugin
 
 ### 🏗️ Architecture

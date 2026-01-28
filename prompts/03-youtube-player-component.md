@@ -1,22 +1,136 @@
-# Prompt 3: Tạo YouTube Player Component
+# YouTube Player Component v2.0 - Context Splitting
 
-## Mục tiêu
-Tạo file `src/components/player/YouTubePlayer.jsx` với YouTube IFrame player và custom controls.
+## 🎯 Objective
+Create player UI components optimized for v2.0 architecture with context splitting.
 
-## Yêu cầu
-Tạo file `src/components/player/YouTubePlayer.jsx` với:
+## 📋 Implementation
 
-### IFrame Container
-- Container div cho YouTube IFrame player
-- Responsive design
-- Hidden YouTube controls (sử dụng custom controls)
+### 1. Create Optimized Player Component
+```javascript
+// src/components/player/YouTubePlayer.jsx
+import { useContext } from "react";
+import { PlayerStateContext, PlayerActionsContext } from "../../contexts/YouTubePlayerContext";
+import { PLAYER_CONFIG } from "../../utils/constants";
 
-### Custom Controls Overlay
-- Play/pause button
-- Progress bar với seek functionality
-- Volume slider
-- Time display (current/total)
-- Next/previous buttons
+function YouTubePlayer() {
+  // Context splitting for performance
+  const { currentTrack, isPlaying, currentTime, duration } = useContext(PlayerStateContext);
+  const { play, pause, seek } = useContext(PlayerActionsContext);
+
+  if (!currentTrack) return null;
+
+  return (
+    <div className="youtube-player">
+      {/* Hidden YouTube container */}
+      <div id={PLAYER_CONFIG.PLAYER_CONTAINER_ID} style={{ display: 'none' }} />
+      
+      {/* Player UI */}
+      <PlayerUI 
+        track={currentTrack}
+        isPlaying={isPlaying}
+        currentTime={currentTime}
+        duration={duration}
+        onPlay={play}
+        onPause={pause}
+        onSeek={seek}
+      />
+    </div>
+  );
+}
+
+// Separate UI component (won't re-render on time updates if using actions only)
+function PlayerControls() {
+  const { play, pause, playNext, playPrevious } = useContext(PlayerActionsContext);
+  
+  return (
+    <div className="player-controls">
+      <button onClick={playPrevious}>⏮️</button>
+      <button onClick={play}>▶️</button>
+      <button onClick={pause}>⏸️</button>
+      <button onClick={playNext}>⏭️</button>
+    </div>
+  );
+}
+
+export default YouTubePlayer;
+```
+
+### 2. Create Progress Bar Component
+```javascript
+// src/components/player/ProgressBar.jsx
+import { useContext } from "react";
+import { PlayerStateContext, PlayerActionsContext } from "../../contexts/YouTubePlayerContext";
+import { formatTime } from "../../utils/formatters";
+
+function ProgressBar() {
+  const { currentTime, duration } = useContext(PlayerStateContext);
+  const { seek } = useContext(PlayerActionsContext);
+
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  const handleSeek = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    const time = percent * duration;
+    seek(time);
+  };
+
+  return (
+    <div className="progress-bar" onClick={handleSeek}>
+      <div className="progress-track">
+        <div 
+          className="progress-fill" 
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <div className="time-display">
+        <span>{formatTime(currentTime)}</span>
+        <span>{formatTime(duration)}</span>
+      </div>
+    </div>
+  );
+}
+
+export default ProgressBar;
+```
+
+### 3. Create Track Info Component
+```javascript
+// src/components/player/TrackInfo.jsx
+import { useContext } from "react";
+import { PlayerStateContext } from "../../contexts/YouTubePlayerContext";
+
+function TrackInfo() {
+  // Only subscribes to state, won't re-render on action calls
+  const { currentTrack, isPlaying } = useContext(PlayerStateContext);
+
+  if (!currentTrack) return null;
+
+  return (
+    <div className="track-info">
+      <img src={currentTrack.thumbnail} alt={currentTrack.title} />
+      <div className="track-details">
+        <h3>{currentTrack.title}</h3>
+        <p>{currentTrack.author}</p>
+        {isPlaying && <div className="playing-indicator">🎵</div>}
+      </div>
+    </div>
+  );
+}
+
+export default TrackInfo;
+```
+
+## ✅ Key Benefits of v2.0
+- **Performance**: Components using only actions won't re-render on time updates
+- **Clean Separation**: State vs Actions clearly separated
+- **Constants Usage**: All magic numbers from constants.js
+- **Optimized Rendering**: Minimal re-renders with context splitting
+
+## 🔄 Migration from v1.0
+- Replace `usePlayer()` with specific context hooks
+- Use constants instead of magic numbers
+- Separate components by state vs action usage
 
 ### Props Interface
 ```jsx

@@ -75,6 +75,17 @@ function AppContent() {
 
       {/* Background Playback Info Modal */}
       <BackgroundPlaybackInfo />
+
+      {/* Footer / Copyright */}
+      <footer className="mt-8 py-8 text-center text-cream-600 text-xs sm:text-sm border-t border-cream-400/20 w-full max-w-4xl mx-auto">
+        <p>
+          &copy; {new Date().getFullYear()} Vibe Audio. Thiết kế và phát triển
+          bởi{" "}
+          <span className="text-gold-700 font-medium whitespace-nowrap">
+            Phan Ngọc Tuấn
+          </span>
+        </p>
+      </footer>
     </div>
   );
 }

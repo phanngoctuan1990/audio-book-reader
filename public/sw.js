@@ -88,8 +88,11 @@ self.addEventListener("fetch", (event) => {
           return cachedResponse;
         }
         return fetch(request).then((networkResponse) => {
-          // Cache the new response
-          if (networkResponse.ok) {
+          // Cache the new response (supported schemes only)
+          if (
+            networkResponse.ok &&
+            (url.protocol === "http:" || url.protocol === "https:")
+          ) {
             const responseClone = networkResponse.clone();
             caches.open(DYNAMIC_CACHE).then((cache) => {
               cache.put(request, responseClone);
@@ -116,8 +119,11 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(request)
       .then((networkResponse) => {
-        // Cache successful responses
-        if (networkResponse.ok) {
+        // Cache successful responses from supported schemes (http/https)
+        if (
+          networkResponse.ok &&
+          (url.protocol === "http:" || url.protocol === "https:")
+        ) {
           const responseClone = networkResponse.clone();
           caches.open(DYNAMIC_CACHE).then((cache) => {
             cache.put(request, responseClone);

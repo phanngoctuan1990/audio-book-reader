@@ -3,9 +3,15 @@
  * Minimal implementation for audiobook streaming
  */
 
+import {
+  YOUTUBE_API_BASE,
+  YOUTUBE_IFRAME_API,
+  PLAYER_CONFIG,
+  SEARCH_MAX_RESULTS,
+} from "../utils/constants";
+import { formatYouTubeDuration, formatViewCount } from "../utils/formatters";
+
 const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
-const YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3";
-const YOUTUBE_IFRAME_API = "https://www.youtube.com/iframe_api";
 
 // Player instance reference
 let player = null;
@@ -225,17 +231,86 @@ export function cueVideoById(videoId, startSeconds = 0) {
 }
 
 // =============================================================================
+// YouTube Data API v3 Helpers (Phase 2 Refactor)
+// =============================================================================
+
+/**
+ * Helper to map custom filters to YouTube API parameters
+ */
+function mapFiltersToParams(params, filters) {
+  if (filters.sortBy && filters.sortBy !== "relevance") {
+    params.append("order", filters.sortBy);
+  }
+
+  if (filters.duration && filters.duration !== "all") {
+    if (filters.duration !== "short") {
+      params.append("videoDuration", "long");
+    }
+  }
+
+  if (filters.uploadDate && filters.uploadDate !== "all") {
+    const now = new Date();
+    let publishedAfter;
+
+    switch (filters.uploadDate) {
+      case "today":
+        publishedAfter = new Date(now.setDate(now.getDate() - 1));
+        break;
+      case "week":
+        publishedAfter = new Date(now.setDate(now.getDate() - 7));
+        break;
+      case "month":
+        publishedAfter = new Date(now.setMonth(now.getMonth() - 1));
+        break;
+      case "year":
+        publishedAfter = new Date(now.setFullYear(now.getFullYear() - 1));
+        break;
+    }
+
+    if (publishedAfter) {
+      params.append("publishedAfter", publishedAfter.toISOString());
+    }
+  }
+}
+
+/**
+ * Helper to map YouTube API response to AudioBookReader format
+ */
+function mapVideoItem(item, details = []) {
+  const detail = details.find(
+    (d) => d.id === item.id.videoId || d.id === item.id,
+  );
+  const snippet = item.snippet;
+
+  return {
+    videoId: item.id.videoId || item.id,
+    title: snippet.title,
+    author: snippet.channelTitle,
+    thumbnail:
+      snippet.thumbnails.medium?.url || snippet.thumbnails.default?.url,
+    duration: detail?.duration || "",
+    views: detail?.viewCount || "",
+    uploadedDate: snippet.publishedAt,
+    description: snippet.description,
+  };
+}
+
+// =============================================================================
 // YouTube Data API v3
 // =============================================================================
 
 /**
  * Search videos via YouTube Data API v3
  * @param {string} query - Search query
- * @param {number} maxResults - Maximum results (default: 20)
- * @param {Object} filters - Search filters (duration, uploadDate, sortBy)
+ * @param {number} maxResults - Maximum results
+ * @param {Object} filters - Search filters
  * @returns {Promise<Array>} Search results
  */
-export async function searchVideos(query, maxResults = 25, filters = {}) {
+export async function searchVideos(
+  query,
+  maxResults = SEARCH_MAX_RESULTS,
+  filters = {},
+) {
   if (!YOUTUBE_API_KEY) {
     throw new Error("YouTube API key not configured");
   }
@@ -248,43 +323,7 @@ export async function searchVideos(query, maxResults = 25, filters = {}) {
     key: YOUTUBE_API_KEY,
   });
 
-  // Apply filters
-  if (filters.sortBy && filters.sortBy !== "relevance") {
-    params.append("order", filters.sortBy);
-  }
-
-  // Duration mapping
-  // API supports: 'any', 'short' (< 4m), 'medium' (4-20m), 'long' (> 20m)
-  if (filters.duration && filters.duration !== "all") {
-    if (filters.duration === "short") {
-      // User says 'Dưới 1h', but API's 'short' is < 4m. 
-      // We don't set specific API filter here to get more results, 
-      // then filter client-side.
-    } else {
-      // 1-3h or > 3h both fall into 'long' (> 20m)
-      params.append("videoDuration", "long");
-    }
-  }
-
-  // Upload date mapping
-  if (filters.uploadDate && filters.uploadDate !== "all") {
-    const now = new Date();
-    let publishedAfter;
-
-    if (filters.uploadDate === "today") {
-      publishedAfter = new Date(now.setDate(now.getDate() - 1));
-    } else if (filters.uploadDate === "week") {
-      publishedAfter = new Date(now.setDate(now.getDate() - 7));
-    } else if (filters.uploadDate === "month") {
-      publishedAfter = new Date(now.setMonth(now.getMonth() - 1));
-    } else if (filters.uploadDate === "year") {
-      publishedAfter = new Date(now.setFullYear(now.getFullYear() - 1));
-    }
-
-    if (publishedAfter) {
-      params.append("publishedAfter", publishedAfter.toISOString());
-    }
-  }
+  mapFiltersToParams(params, filters);
 
   try {
     const response = await fetch(`${YOUTUBE_API_BASE}/search?${params}`);
@@ -295,27 +334,10 @@ export async function searchVideos(query, maxResults = 25, filters = {}) {
     }
 
     const data = await response.json();
-
-    // Get video IDs for duration info
     const videoIds = data.items.map((item) => item.id.videoId).join(",");
     const details = await getVideosDetails(videoIds);
 
-    // Merge search results with details
-    return data.items.map((item) => {
-      const detail = details.find((d) => d.id === item.id.videoId);
-      return {
-        videoId: item.id.videoId,
-        title: item.snippet.title,
-        author: item.snippet.channelTitle,
-        thumbnail:
-          item.snippet.thumbnails.medium?.url ||
-          item.snippet.thumbnails.default?.url,
-        duration: detail?.duration || "",
-        views: detail?.viewCount || "",
-        uploadedDate: item.snippet.publishedAt,
-        description: item.snippet.description,
-      };
-    });
+    return data.items.map((item) => mapVideoItem(item, details));
   } catch (error) {
     throw new Error("Không thể tìm kiếm. Vui lòng thử lại.");
   }
@@ -362,54 +384,13 @@ export async function getVideosDetails(videoIds) {
       title: item.snippet.title,
       author: item.snippet.channelTitle,
       thumbnail: item.snippet.thumbnails.medium?.url,
-      duration: parseDuration(item.contentDetails.duration),
+      duration: formatYouTubeDuration(item.contentDetails.duration),
       viewCount: formatViewCount(item.statistics.viewCount),
       description: item.snippet.description,
     }));
   } catch (error) {
     return [];
   }
-}
-
-// =============================================================================
-// Utility Functions
-// =============================================================================
-
-/**
- * Parse ISO 8601 duration to readable format
- * @param {string} duration - ISO 8601 duration (PT1H2M3S)
- * @returns {string} Formatted duration (1:02:03)
- */
-function parseDuration(duration) {
-  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-  if (!match) return "0:00";
-
-  const hours = parseInt(match[1] || 0);
-  const minutes = parseInt(match[2] || 0);
-  const seconds = parseInt(match[3] || 0);
-
-  if (hours > 0) {
-    return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-  }
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
-}
-
-/**
- * Format view count to readable format
- * @param {string} count - View count
- * @returns {string} Formatted count (1.2M views)
- */
-function formatViewCount(count) {
-  const num = parseInt(count);
-  if (isNaN(num)) return "";
-
-  if (num >= 1000000) {
-    return `${(num / 1000000).toFixed(1)}M views`;
-  }
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(1)}K views`;
-  }
-  return `${num} views`;
 }
 
 // Player state constants
