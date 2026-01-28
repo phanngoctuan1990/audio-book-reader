@@ -1,7 +1,6 @@
 /**
  * RadioFilters Component
  * Genre and mood filter buttons for radio stations
- * Refactored for Soft Gold theme and high readability
  */
 import { useRadio } from "../../contexts/RadioContext";
 
@@ -42,7 +41,9 @@ function RadioFilters() {
       {/* Genre filters */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-cream-800">Thể loại</h3>
+          <h3 className="text-sm font-semibold" style={{ color: "#4A4035" }}>
+            Thể loại
+          </h3>
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
@@ -75,7 +76,9 @@ function RadioFilters() {
 
       {/* Mood filters */}
       <div>
-        <h3 className="text-sm font-semibold text-cream-800 mb-2">Tâm trạng</h3>
+        <h3 className="text-sm font-semibold mb-2" style={{ color: "#4A4035" }}>
+          Tâm trạng
+        </h3>
         <div className="flex flex-wrap gap-2">
           {moods.map((mood) => (
             <button
