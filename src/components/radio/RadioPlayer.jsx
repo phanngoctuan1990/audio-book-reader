@@ -1,6 +1,7 @@
 /**
  * RadioPlayer Component
  * Mini player for radio streaming with basic controls
+ * Refactored for Soft Gold theme and clear readability
  */
 import { useRadio } from "../../contexts/RadioContext";
 
@@ -25,16 +26,16 @@ function RadioPlayer() {
   };
 
   return (
-    <div className="fixed bottom-16 left-0 right-0 z-30 px-3 pb-2">
-      <div className="glass rounded-2xl overflow-hidden shadow-lg">
+    <div className="fixed bottom-[72px] sm:bottom-24 left-0 right-0 z-30 px-3 pb-safe">
+      <div className="bg-cream-50/95 backdrop-blur-md rounded-2xl overflow-hidden shadow-soft-player border border-gold-200/50 sm:max-w-lg sm:mx-auto lg:max-w-xl lg:ml-72">
         {/* Stream status indicator */}
-        <div className="h-1 bg-white/10">
+        <div className="h-1 bg-cream-200">
           {isBuffering ? (
-            <div className="h-full bg-yellow-500/50 animate-pulse" />
+            <div className="h-full bg-gold-400/50 animate-pulse" />
           ) : isPlaying ? (
-            <div className="h-full bg-gradient-to-r from-accent-purple to-primary w-full" />
+            <div className="h-full bg-gradient-to-r from-gold-400 to-gold-600 w-full" />
           ) : (
-            <div className="h-full bg-white/20 w-full" />
+            <div className="h-full bg-cream-300 w-full" />
           )}
         </div>
 
@@ -43,15 +44,15 @@ function RadioPlayer() {
           <div className="relative flex-shrink-0">
             <div
               className={`
-              w-12 h-12 rounded-xl bg-gradient-to-br from-accent-purple to-primary
-              flex items-center justify-center
-              ${isPlaying ? "animate-pulse-slow" : ""}
+              w-12 h-12 rounded-xl bg-gradient-to-br from-gold-400 to-gold-600
+              flex items-center justify-center shadow-soft-3d-sm
+              ${isPlaying ? "animate-pulse" : ""}
             `}
             >
               <span className="text-2xl">📻</span>
             </div>
             {(isLoading || isBuffering) && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl">
+              <div className="absolute inset-0 flex items-center justify-center bg-cream-900/40 rounded-xl">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               </div>
             )}
@@ -59,41 +60,40 @@ function RadioPlayer() {
 
           {/* Station info */}
           <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-medium text-white truncate">
+            <h4 className="text-sm font-semibold text-cream-900 truncate">
               {currentStation.name}
             </h4>
-            <p className="text-xs text-white/60 truncate">
+            <p className="text-xs text-cream-600 truncate">
               {currentStation.genre} • {isPlaying ? "Đang phát" : "Tạm dừng"}
             </p>
-            {error && <p className="text-xs text-red-400 truncate">{error}</p>}
+            {error && (
+              <p className="text-xs text-red-500 font-medium truncate mt-0.5">
+                {error}
+              </p>
+            )}
           </div>
 
           {/* Volume slider (desktop) */}
           <div className="hidden md:flex items-center gap-2">
-            <span className="text-white/60">🔊</span>
+            <span className="text-cream-500 text-sm">🔊</span>
             <input
               type="range"
               min="0"
               max="100"
               value={volume}
               onChange={handleVolumeChange}
-              className="w-20 h-1 bg-white/20 rounded-full appearance-none cursor-pointer
-                         [&::-webkit-slider-thumb]:appearance-none
-                         [&::-webkit-slider-thumb]:w-3
-                         [&::-webkit-slider-thumb]:h-3
-                         [&::-webkit-slider-thumb]:bg-white
-                         [&::-webkit-slider-thumb]:rounded-full"
+              className="w-20 h-1.5 bg-cream-300 rounded-full appearance-none cursor-pointer accent-gold-600"
             />
           </div>
 
-          {/* Play/Pause Button */}
+          {/* Play/Pause Button - Gold style */}
           <button
             onClick={toggleRadio}
             disabled={isLoading}
-            className="w-11 h-11 flex items-center justify-center 
-                       bg-gradient-to-r from-accent-purple to-primary rounded-full
-                       active:scale-95 transition-transform touch-target
+            className="w-12 h-12 flex items-center justify-center 
+                       btn-gold-3d min-h-[44px] min-w-[44px]
                        disabled:opacity-50"
+            aria-label={isPlaying ? "Tạm dừng" : "Phát"}
           >
             {isPlaying ? (
               <svg
@@ -118,12 +118,13 @@ function RadioPlayer() {
           {/* Stop Button */}
           <button
             onClick={stopRadio}
-            className="w-8 h-8 flex items-center justify-center 
-                       text-white/60 hover:text-white
-                       rounded-full hover:bg-white/10
-                       transition-colors touch-target"
+            className="w-10 h-10 flex items-center justify-center 
+                       text-cream-500 hover:text-red-500
+                       rounded-full hover:bg-cream-200
+                       transition-colors transition-transform active:scale-95"
+            aria-label="Dừng Radio"
           >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <rect x="6" y="6" width="12" height="12" rx="1" />
             </svg>
           </button>

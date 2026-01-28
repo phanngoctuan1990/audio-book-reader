@@ -1,6 +1,7 @@
 /**
  * RadioFilters Component
  * Genre and mood filter buttons for radio stations
+ * Refactored for Soft Gold theme and high readability
  */
 import { useRadio } from "../../contexts/RadioContext";
 
@@ -41,11 +42,11 @@ function RadioFilters() {
       {/* Genre filters */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-medium text-white/80">Thể loại</h3>
+          <h3 className="text-sm font-semibold text-cream-800">Thể loại</h3>
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="text-xs text-primary hover:text-primary-light transition-colors"
+              className="text-xs font-medium text-gold-700 hover:text-gold-800 transition-colors"
             >
               Xóa bộ lọc
             </button>
@@ -57,12 +58,12 @@ function RadioFilters() {
               key={genre}
               onClick={() => setGenreFilter(genre)}
               className={`
-                px-3 py-1.5 rounded-full text-sm font-medium
-                transition-all duration-200 active:scale-95
+                px-4 py-2 rounded-full text-sm font-medium
+                transition-all duration-200 active:scale-95 border
                 ${
                   selectedGenre === genre
-                    ? "bg-gradient-to-r from-accent-purple to-primary text-white"
-                    : "bg-dark-700 text-white/70 hover:text-white hover:bg-dark-600 border border-white/10"
+                    ? "bg-gold-500 text-white border-gold-600 shadow-soft-3d-sm"
+                    : "bg-cream-50 text-cream-700 border-cream-400/50 hover:bg-cream-100/80 hover:text-cream-900"
                 }
               `}
             >
@@ -74,19 +75,19 @@ function RadioFilters() {
 
       {/* Mood filters */}
       <div>
-        <h3 className="text-sm font-medium text-white/80 mb-2">Tâm trạng</h3>
+        <h3 className="text-sm font-semibold text-cream-800 mb-2">Tâm trạng</h3>
         <div className="flex flex-wrap gap-2">
           {moods.map((mood) => (
             <button
               key={mood}
               onClick={() => setMoodFilter(mood)}
               className={`
-                px-3 py-1.5 rounded-full text-sm font-medium
-                transition-all duration-200 active:scale-95
+                px-4 py-2 rounded-full text-sm font-medium
+                transition-all duration-200 active:scale-95 border
                 ${
                   selectedMood === mood
-                    ? "bg-gradient-to-r from-primary to-accent-blue text-white"
-                    : "bg-dark-700 text-white/70 hover:text-white hover:bg-dark-600 border border-white/10"
+                    ? "bg-gold-500 text-white border-gold-600 shadow-soft-3d-sm"
+                    : "bg-cream-50 text-cream-700 border-cream-400/50 hover:bg-cream-100/80 hover:text-cream-900"
                 }
               `}
             >

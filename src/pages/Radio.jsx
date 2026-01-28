@@ -11,8 +11,8 @@ function Radio() {
     <div className="px-4 py-6 pb-36">
       {/* Header */}
       <header className="mb-6">
-        <h1 className="text-2xl font-bold text-white">📻 Radio</h1>
-        <p className="text-white/60 text-sm mt-1">
+        <h1 className="text-2xl font-bold text-cream-900">📻 Radio</h1>
+        <p className="text-cream-600 text-sm mt-1">
           Nghe radio trực tuyến theo thể loại & tâm trạng
         </p>
       </header>
@@ -24,7 +24,7 @@ function Radio() {
 
       {/* Station List */}
       <section>
-        <h2 className="text-lg font-semibold text-white mb-3">
+        <h2 className="text-lg font-semibold text-cream-950 mb-3">
           Danh sách kênh
         </h2>
         <RadioStationList />
