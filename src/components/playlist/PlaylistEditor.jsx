@@ -1,6 +1,7 @@
 /**
  * PlaylistEditor Component
  * Edit playlist tracks with search, remove, and reorder
+ * Refactored for Soft Gold theme
  */
 import { useState, useEffect, useMemo } from "react";
 import { usePlaylist } from "../../contexts/PlaylistContext";
@@ -61,6 +62,10 @@ function PlaylistEditor({ playlist, onBack }) {
   };
 
   const handleClearAll = async () => {
+    if (
+      !window.confirm("Bạn có chắc muốn xóa tất cả bài hát khỏi playlist này?")
+    )
+      return;
     setIsClearing(true);
     await clearAllTracks(playlist.id);
     setIsClearing(false);
@@ -83,12 +88,12 @@ function PlaylistEditor({ playlist, onBack }) {
   if (!playlist) return null;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header with back button */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <button
           onClick={onBack}
-          className="w-10 h-10 flex items-center justify-center text-white/60 hover:text-white rounded-full hover:bg-white/10 transition-colors"
+          className="w-10 h-10 flex items-center justify-center bg-cream-50 text-cream-600 hover:text-cream-950 rounded-full hover:bg-cream-200 transition-all shadow-soft-card border border-cream-400/30 active:scale-90"
         >
           <svg
             className="w-6 h-6"
@@ -99,16 +104,16 @@ function PlaylistEditor({ playlist, onBack }) {
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={2}
+              strokeWidth={2.5}
               d="M15 19l-7-7 7-7"
             />
           </svg>
         </button>
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-bold text-white truncate">
+          <h2 className="text-xl font-bold text-cream-900 truncate">
             {playlist.name}
           </h2>
-          <p className="text-white/60 text-sm">
+          <p className="text-cream-600 text-xs font-bold uppercase tracking-widest">
             {playlist.trackCount} bài •{" "}
             {formatDuration(playlist.totalDuration) || "0 phút"}
           </p>
@@ -116,12 +121,12 @@ function PlaylistEditor({ playlist, onBack }) {
       </div>
 
       {/* Actions bar */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         {/* Play all button */}
         <button
           onClick={handlePlayAll}
           disabled={!playlist.items?.length}
-          className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-primary text-white rounded-xl font-medium disabled:opacity-50 active:scale-95 transition-transform"
+          className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-gold-400 text-white rounded-2xl font-bold shadow-soft-3d hover:bg-gold-500 disabled:opacity-50 active:scale-95 transition-all text-sm"
         >
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M8 5v14l11-7z" />
@@ -133,7 +138,8 @@ function PlaylistEditor({ playlist, onBack }) {
         <button
           onClick={handleClearAll}
           disabled={!playlist.items?.length || isClearing}
-          className="px-4 py-3 text-white/60 hover:text-red-400 rounded-xl hover:bg-red-500/10 disabled:opacity-50 transition-colors"
+          className="w-12 h-12 flex items-center justify-center bg-cream-50 text-cream-500 hover:text-red-500 rounded-2xl hover:bg-red-50 border border-cream-300 shadow-soft-card disabled:opacity-50 transition-all active:scale-95"
+          title="Xóa tất cả"
         >
           {isClearing ? (
             <div className="w-5 h-5 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
@@ -158,7 +164,7 @@ function PlaylistEditor({ playlist, onBack }) {
       {/* Search bar */}
       {playlist.items?.length > 3 && (
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cream-400">
             🔍
           </span>
           <input
@@ -166,12 +172,12 @@ function PlaylistEditor({ playlist, onBack }) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm trong playlist..."
-            className="w-full bg-dark-700 text-white placeholder-white/40 rounded-xl px-4 py-3 pl-10 text-sm border border-white/10 focus:border-primary focus:outline-none"
+            className="w-full bg-cream-50 text-cream-950 placeholder-cream-400 rounded-2xl px-4 py-3.5 pl-12 text-sm border border-cream-300 focus:border-gold-500 focus:outline-none focus:ring-4 focus:ring-gold-400/10 shadow-soft-card font-medium transition-all"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-cream-200 text-cream-600 rounded-full hover:text-cream-950"
             >
               ✕
             </button>
@@ -181,17 +187,17 @@ function PlaylistEditor({ playlist, onBack }) {
 
       {/* Track list */}
       {filteredTracks.length === 0 ? (
-        <div className="bg-dark-800 rounded-2xl p-8 text-center">
-          <span className="text-5xl mb-4 block">🎵</span>
-          <h3 className="text-white font-semibold mb-2">
+        <div className="bg-cream-50 rounded-3xl p-12 text-center border border-cream-300 shadow-soft-card">
+          <span className="text-5xl mb-4 block opacity-30">🎵</span>
+          <h3 className="text-cream-900 font-bold mb-2">
             {searchQuery ? "Không tìm thấy" : "Playlist trống"}
           </h3>
-          <p className="text-white/60 text-sm">
+          <p className="text-cream-600 text-sm">
             {searchQuery ? "Thử từ khóa khác" : "Thêm sách từ kết quả tìm kiếm"}
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {filteredTracks.map((track, index) => {
             const isPlaying = currentTrack?.videoId === track.videoId;
             const originalIndex = playlist.items.findIndex(
@@ -203,12 +209,12 @@ function PlaylistEditor({ playlist, onBack }) {
                 key={track.videoId}
                 onClick={() => handlePlayTrack(track, index)}
                 className={`
-                  flex items-center gap-3 p-3 rounded-xl cursor-pointer
-                  transition-all active:scale-[0.98]
+                  flex items-center gap-4 p-3 rounded-2xl cursor-pointer
+                  transition-all active:scale-[0.98] border
                   ${
                     isPlaying
-                      ? "bg-primary/20 border border-primary/50"
-                      : "bg-dark-800 hover:bg-dark-700"
+                      ? "bg-gold-50 border-gold-400 shadow-soft-3d-sm"
+                      : "bg-cream-50 border-cream-200 hover:bg-cream-100/50 shadow-soft-card"
                   }
                 `}
               >
@@ -216,19 +222,13 @@ function PlaylistEditor({ playlist, onBack }) {
                 <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
                   {isPlaying ? (
                     <div className="flex gap-0.5 h-4">
-                      <span className="w-1 bg-primary rounded-full animate-pulse" />
-                      <span
-                        className="w-1 bg-primary rounded-full animate-pulse"
-                        style={{ animationDelay: "150ms" }}
-                      />
-                      <span
-                        className="w-1 bg-primary rounded-full animate-pulse"
-                        style={{ animationDelay: "300ms" }}
-                      />
+                      <span className="w-1 bg-gold-500 rounded-full animate-bar-1" />
+                      <span className="w-1 bg-gold-500 rounded-full animate-bar-2" />
+                      <span className="w-1 bg-gold-500 rounded-full animate-bar-3" />
                     </div>
                   ) : (
-                    <span className="text-white/40 text-sm">
-                      {originalIndex + 1}
+                    <span className="text-cream-400 text-xs font-bold">
+                      {(originalIndex + 1).toString().padStart(2, "0")}
                     </span>
                   )}
                 </div>
@@ -237,33 +237,33 @@ function PlaylistEditor({ playlist, onBack }) {
                 <img
                   src={track.thumbnail}
                   alt={track.title}
-                  className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                  className="w-14 h-14 rounded-xl object-cover flex-shrink-0 shadow-soft-3d-inset"
                 />
 
                 {/* Track info */}
                 <div className="flex-1 min-w-0">
                   <h4
-                    className={`text-sm font-medium truncate ${isPlaying ? "text-primary" : "text-white"}`}
+                    className={`text-sm font-bold truncate ${isPlaying ? "text-gold-700" : "text-cream-900"}`}
                   >
                     {track.title}
                   </h4>
-                  <p className="text-white/60 text-xs truncate">
+                  <p className="text-cream-600 text-xs truncate font-medium">
                     {track.author}
                   </p>
                 </div>
 
                 {/* Duration */}
-                <span className="text-white/40 text-xs flex-shrink-0">
+                <span className="text-cream-400 text-[10px] font-bold flex-shrink-0 bg-cream-100 px-2 py-1 rounded-md">
                   {formatDuration(track.duration)}
                 </span>
 
                 {/* Reorder buttons */}
                 {!searchQuery && (
-                  <div className="flex flex-col gap-0.5">
+                  <div className="flex flex-col gap-1">
                     <button
                       onClick={(e) => handleMoveUp(e, originalIndex)}
                       disabled={originalIndex === 0}
-                      className="p-1 text-white/40 hover:text-white disabled:opacity-30 transition-colors"
+                      className="p-1 text-cream-400 hover:text-gold-600 disabled:opacity-20 transition-colors"
                     >
                       <svg
                         className="w-4 h-4"
@@ -274,7 +274,7 @@ function PlaylistEditor({ playlist, onBack }) {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={2}
+                          strokeWidth={2.5}
                           d="M5 15l7-7 7 7"
                         />
                       </svg>
@@ -282,7 +282,7 @@ function PlaylistEditor({ playlist, onBack }) {
                     <button
                       onClick={(e) => handleMoveDown(e, originalIndex)}
                       disabled={originalIndex === playlist.items.length - 1}
-                      className="p-1 text-white/40 hover:text-white disabled:opacity-30 transition-colors"
+                      className="p-1 text-cream-400 hover:text-gold-600 disabled:opacity-20 transition-colors"
                     >
                       <svg
                         className="w-4 h-4"
@@ -293,7 +293,7 @@ function PlaylistEditor({ playlist, onBack }) {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={2}
+                          strokeWidth={2.5}
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
@@ -304,10 +304,10 @@ function PlaylistEditor({ playlist, onBack }) {
                 {/* Remove button */}
                 <button
                   onClick={(e) => handleRemoveTrack(e, track.videoId)}
-                  className="w-8 h-8 flex items-center justify-center text-white/40 hover:text-red-400 rounded-full hover:bg-red-500/10 transition-colors"
+                  className="w-10 h-10 flex items-center justify-center bg-cream-100/50 text-cream-400 hover:text-red-500 rounded-full hover:bg-red-50 transition-all border border-transparent hover:border-red-200"
                 >
                   <svg
-                    className="w-4 h-4"
+                    className="w-5 h-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
