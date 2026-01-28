@@ -150,7 +150,7 @@ export class BackgroundPlaybackManager {
 }
 ```
 
-### 4. Update YouTube Player Context (`src/contexts/YouTubePlayerContext.jsx`)
+### 4. Update YouTube Player Context (`src/contexts/PlayerContext.jsx`)
 ```javascript
 // Enhanced với background playback support
 import { setupMediaSession, updateMediaSessionState, updateMediaSessionPosition } from '../services/mediaSession';

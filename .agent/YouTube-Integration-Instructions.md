@@ -23,7 +23,7 @@ User → React App → YouTube IFrame Player API → Direct YouTube Stream
 - Player control functions
 - Event handling
 
-### 2. YouTube Player Context (`src/contexts/YouTubePlayerContext.jsx`)
+### 2. YouTube Player Context (`src/contexts/PlayerContext.jsx`)
 - State management for YouTube player
 - Queue management
 - Player lifecycle handling

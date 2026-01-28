@@ -42,7 +42,7 @@
 
 ### **Before: Monolithic God Object**
 ```
-YouTubePlayerContext.jsx (640 lines)
+PlayerContext.jsx (640 lines)
 ├── Player instance management
 ├── Queue & shuffle logic
 ├── Persistence (localStorage)
@@ -55,7 +55,7 @@ YouTubePlayerContext.jsx (640 lines)
 
 ### **After: Modular Hook Architecture**
 ```
-YouTubePlayerContext.jsx (223 lines) - Orchestrator only
+PlayerContext.jsx (223 lines) - Orchestrator only
 ├── useYouTubePlayerCore.js - Player instance & events
 ├── usePlayerQueue.js - Queue, shuffle, repeat
 ├── usePlayerPersistence.js - localStorage sync

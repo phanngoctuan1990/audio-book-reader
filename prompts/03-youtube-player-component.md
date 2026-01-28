@@ -9,7 +9,7 @@ Create player UI components optimized for v2.0 architecture with context splitti
 ```javascript
 // src/components/player/YouTubePlayer.jsx
 import { useContext } from "react";
-import { PlayerStateContext, PlayerActionsContext } from "../../contexts/YouTubePlayerContext";
+import { PlayerStateContext, PlayerActionsContext } from "../../contexts/PlayerContext";
 import { PLAYER_CONFIG } from "../../utils/constants";
 
 function YouTubePlayer() {
@@ -59,7 +59,7 @@ export default YouTubePlayer;
 ```javascript
 // src/components/player/ProgressBar.jsx
 import { useContext } from "react";
-import { PlayerStateContext, PlayerActionsContext } from "../../contexts/YouTubePlayerContext";
+import { PlayerStateContext, PlayerActionsContext } from "../../contexts/PlayerContext";
 import { formatTime } from "../../utils/formatters";
 
 function ProgressBar() {
@@ -98,7 +98,7 @@ export default ProgressBar;
 ```javascript
 // src/components/player/TrackInfo.jsx
 import { useContext } from "react";
-import { PlayerStateContext } from "../../contexts/YouTubePlayerContext";
+import { PlayerStateContext } from "../../contexts/PlayerContext";
 
 function TrackInfo() {
   // Only subscribes to state, won't re-render on action calls
@@ -146,7 +146,7 @@ YouTubePlayer.propTypes = {
 
 ### Integration
 - Sử dụng YouTube service functions
-- Connect với YouTubePlayerContext
+- Connect với PlayerContext
 - Handle player events và state updates
 
 ### Styling

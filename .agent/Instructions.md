@@ -362,7 +362,7 @@ src/
 │   ├── api.js           # API wrapper
 │   └── db.js            # IndexedDB operations
 ├── contexts/
-│   ├── YouTubePlayerContext.jsx
+│   ├── PlayerContext.jsx
 │   └── PlayerContext.jsx  # Re-export for compatibility
 ├── pages/
 │   ├── Home.jsx         # Search

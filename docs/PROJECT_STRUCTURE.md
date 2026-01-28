@@ -45,7 +45,7 @@ src/
 │   │   └── BackgroundPlaybackInfo.jsx # User education modal
 │   └── 📁 radio/               # Radio components
 ├── 📁 contexts/                # React Contexts (v2.0)
-│   ├── YouTubePlayerContext.jsx # Main player context (223 lines)
+│   ├── PlayerContext.jsx # Main player context (223 lines)
 │   ├── PlayerReducer.js        # State management
 │   ├── PlayerContext.jsx       # Legacy wrapper
 │   ├── RadioContext.jsx        # Radio context
@@ -79,7 +79,7 @@ src/
 ### **Modular Hooks Architecture**
 ```javascript
 // Before: Monolithic context (640 lines)
-YouTubePlayerContext.jsx - Everything in one file
+PlayerContext.jsx - Everything in one file
 
 // After: Modular hooks (223 lines main + focused hooks)
 ├── useYouTubePlayerCore.js    # Player instance
@@ -146,7 +146,7 @@ components/
 ### 🔄 Contexts (`src/contexts/`)
 ```
 contexts/
-├── YouTubePlayerContext.jsx     # YouTube player state management
+├── PlayerContext.jsx     # YouTube player state management
 ├── PlayerContext.jsx            # Re-export for backward compatibility
 └── ToastContext.jsx            # Toast notifications
 ```
@@ -282,7 +282,7 @@ module.exports = {
 ### State Flow
 ```
 App.jsx
-├── PlayerProvider (YouTubePlayerContext)
+├── PlayerProvider (PlayerContext)
 ├── ToastProvider
 ├── Pages (Home, Library, Favorites)
 ├── MiniPlayer (when playing)
@@ -292,12 +292,12 @@ App.jsx
 ### Data Flow
 ```
 User Input → useSearch → api.js → youtube.js → YouTube API
-YouTube Player ← YouTubePlayerContext ← Components
+YouTube Player ← PlayerContext ← Components
 ```
 
 ### Event Flow
 ```
-YouTube Player Events → YouTubePlayerContext → Components
+YouTube Player Events → PlayerContext → Components
 User Actions → Components → Context → YouTube Service
 ```
 
@@ -329,7 +329,7 @@ User Actions → Components → Context → YouTube Service
 
 ### Context Structure
 ```javascript
-// YouTubePlayerContext
+// PlayerContext
 {
   currentTrack: Track | null,
   isPlaying: boolean,

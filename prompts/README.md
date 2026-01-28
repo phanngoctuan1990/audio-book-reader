@@ -5,7 +5,7 @@
 
 ### **Current Architecture:**
 ```
-src/contexts/YouTubePlayerContext.jsx (223 lines) - Main orchestrator
+src/contexts/PlayerContext.jsx (223 lines) - Main orchestrator
 src/hooks/
 ├── useYouTubePlayerCore.js - Player instance & events  
 ├── usePlayerQueue.js - Queue, shuffle, repeat

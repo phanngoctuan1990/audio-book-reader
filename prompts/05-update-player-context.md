@@ -17,7 +17,7 @@ This functionality has been replaced by:
 The v2.0 architecture uses:
 ```javascript
 // Instead of updating PlayerContext, we now use:
-src/contexts/YouTubePlayerContext.jsx - Main context (223 lines)
+src/contexts/PlayerContext.jsx - Main context (223 lines)
 src/hooks/useYouTubePlayerCore.js - Core player logic
 src/hooks/usePlayerQueue.js - Queue management
 src/hooks/usePlayerPersistence.js - Settings persistence

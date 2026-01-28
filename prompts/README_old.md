@@ -5,7 +5,7 @@
 
 ### **Current Architecture (v2.0):**
 ```
-src/contexts/YouTubePlayerContext.jsx (223 lines) - Main orchestrator
+src/contexts/PlayerContext.jsx (223 lines) - Main orchestrator
 src/hooks/
 ├── useYouTubePlayerCore.js - Player instance & events  
 ├── usePlayerQueue.js - Queue, shuffle, repeat
@@ -43,7 +43,7 @@ export function usePlayerNewFeature(state, actions) {
   return featureAPI;
 }
 
-// 2. Integrate in YouTubePlayerContext.jsx
+// 2. Integrate in PlayerContext.jsx
 const newFeature = usePlayerNewFeature(state, actions);
 
 // 3. Use constants from constants.js

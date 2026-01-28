@@ -147,7 +147,7 @@ export function usePlayerQueue(onLoadTrack, currentTime, seekTo, playVideo, setP
 
 ### 4. Create Main Context with Splitting
 ```javascript
-// src/contexts/YouTubePlayerContext.jsx
+// src/contexts/PlayerContext.jsx
 import { createContext, useContext, useReducer, useRef, useEffect, useMemo } from "react";
 import { useYouTubePlayerCore } from "../hooks/useYouTubePlayerCore";
 import { usePlayerQueue } from "../hooks/usePlayerQueue";

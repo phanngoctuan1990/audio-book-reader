@@ -65,7 +65,7 @@ npm run preview
 ### **Modular Hook System**
 ```javascript
 // Main Context (223 lines - 65% reduction)
-YouTubePlayerContext.jsx
+PlayerContext.jsx
 ├── useYouTubePlayerCore.js    # Player instance & events
 ├── usePlayerQueue.js          # Queue, shuffle, repeat  
 ├── usePlayerPersistence.js    # Auto localStorage sync
@@ -169,7 +169,7 @@ src/
 │       ├── BottomNav.jsx
 │       └── InstallBanner.jsx
 ├── contexts/
-│   ├── YouTubePlayerContext.jsx   # YouTube player state
+│   ├── PlayerContext.jsx   # YouTube player state
 │   └── PlayerContext.jsx          # Re-export for compatibility
 ├── services/
 │   ├── youtube.js                 # YouTube API integration
