@@ -232,7 +232,11 @@ export function YouTubePlayerProvider({ children }) {
   );
 }
 
-export const useYouTubePlayer = () => ({
-  ...useContext(PlayerStateContext),
-  ...useContext(PlayerActionsContext),
-});
+export function useYouTubePlayer() {
+  const state = useContext(PlayerStateContext);
+  const actions = useContext(PlayerActionsContext);
+  return {
+    ...state,
+    ...actions,
+  };
+}

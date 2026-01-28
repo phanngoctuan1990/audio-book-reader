@@ -1,18 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+import {
+  Home as HomeIcon,
+  Radio as RadioIcon,
+  Library as LibraryIcon,
+  Heart,
+} from "lucide-react";
+
 import { PlayerProvider, usePlayer } from "./contexts/PlayerContext";
 import { RadioProvider } from "./contexts/RadioContext";
 import { PlaylistProvider } from "./contexts/PlaylistContext";
 import { ToastProvider } from "./contexts/ToastContext";
+
 import BottomNav from "./components/common/BottomNav";
 import EnhancedMiniPlayer from "./components/player/EnhancedMiniPlayer";
 import FullPlayerView from "./components/player/FullPlayerView";
 import BackgroundPlaybackInfo from "./components/player/BackgroundPlaybackInfo";
+import InstallBanner from "./components/pwa/InstallBanner";
+import AddToPlaylistModal from "./components/playlist/AddToPlaylistModal";
+
 import Home from "./pages/Home";
 import Radio from "./pages/Radio";
 import Library from "./pages/Library";
 import Favorites from "./pages/Favorites";
-import InstallBanner from "./components/pwa/InstallBanner";
-import AddToPlaylistModal from "./components/playlist/AddToPlaylistModal";
 
 function AppContent() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -93,13 +103,6 @@ function AppContent() {
 /**
  * Desktop Side Navigation Component
  */
-import {
-  Home as HomeIcon,
-  Radio as RadioIcon,
-  Library as LibraryIcon,
-  Heart,
-} from "lucide-react";
-
 function DesktopNav({ currentPage, onNavigate }) {
   const navItems = [
     { id: "home", icon: HomeIcon, label: "Trang chủ" },

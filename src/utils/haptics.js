@@ -4,75 +4,76 @@
  */
 
 // Check if vibration API is supported
-const isVibrationSupported = () =>
-  typeof navigator !== "undefined" && "vibrate" in navigator;
+function isVibrationSupported() {
+  return typeof navigator !== "undefined" && "vibrate" in navigator;
+}
 
 /**
  * Trigger a light haptic feedback (10ms)
  * Use for: button taps, toggles, selections
  */
-export const hapticLight = () => {
+export function hapticLight() {
   if (isVibrationSupported()) {
     navigator.vibrate(10);
   }
-};
+}
 
 /**
  * Trigger a medium haptic feedback (20ms)
  * Use for: important actions, confirmations
  */
-export const hapticMedium = () => {
+export function hapticMedium() {
   if (isVibrationSupported()) {
     navigator.vibrate(20);
   }
-};
+}
 
 /**
  * Trigger a heavy haptic feedback (30ms)
  * Use for: errors, warnings, destructive actions
  */
-export const hapticHeavy = () => {
+export function hapticHeavy() {
   if (isVibrationSupported()) {
     navigator.vibrate(30);
   }
-};
+}
 
 /**
  * Trigger a success pattern (double tap)
  * Use for: successful operations, achievements
  */
-export const hapticSuccess = () => {
+export function hapticSuccess() {
   if (isVibrationSupported()) {
     navigator.vibrate([10, 50, 10]);
   }
-};
+}
 
 /**
  * Trigger an error pattern (triple short vibration)
  * Use for: errors, failed operations
  */
-export const hapticError = () => {
+export function hapticError() {
   if (isVibrationSupported()) {
     navigator.vibrate([30, 30, 30, 30, 30]);
   }
-};
+}
 
 /**
  * Trigger a notification pattern
  * Use for: alerts, notifications
  */
-export const hapticNotification = () => {
+export function hapticNotification() {
   if (isVibrationSupported()) {
     navigator.vibrate([15, 100, 15]);
   }
-};
+}
 
 /**
  * Create a ripple effect on click
  * @param {MouseEvent} event - Click event
  * @param {HTMLElement} container - Container element
  */
-export const createRipple = (event, container) => {
+export function createRipple(event, container) {
   if (!container) return;
 
   const rect = container.getBoundingClientRect();
@@ -92,7 +93,7 @@ export const createRipple = (event, container) => {
   setTimeout(() => {
     ripple.remove();
   }, 600);
-};
+}
 
 /**
  * Combined haptic and ripple effect
@@ -100,7 +101,7 @@ export const createRipple = (event, container) => {
  * @param {HTMLElement} container - Container element
  * @param {'light' | 'medium' | 'heavy'} intensity - Haptic intensity
  */
-export const interactiveFeedback = (event, container, intensity = "light") => {
+export function interactiveFeedback(event, container, intensity = "light") {
   // Haptic feedback
   switch (intensity) {
     case "medium":
@@ -117,7 +118,7 @@ export const interactiveFeedback = (event, container, intensity = "light") => {
   if (container) {
     createRipple(event, container);
   }
-};
+}
 
 export default {
   hapticLight,
