@@ -386,7 +386,7 @@ export async function addToSearchHistory(query) {
   if (!query || !query.trim()) return;
   const db = await getDB();
   await db.put(STORES.SEARCH_HISTORY, {
-    query: query.trim(),
+    query: query.trim().normalize("NFC"),
     searchedAt: Date.now(),
   });
 }
@@ -399,7 +399,21 @@ export async function addToSearchHistory(query) {
 export async function getSearchHistory(limit = 10) {
   const db = await getDB();
   const all = await db.getAllFromIndex(STORES.SEARCH_HISTORY, "searchedAt");
-  return all.reverse().slice(0, limit);
+  const reversed = all.reverse();
+
+  // Defensive deduplication by query
+  const unique = [];
+  const seen = new Set();
+
+  for (const item of reversed) {
+    if (!seen.has(item.query)) {
+      seen.add(item.query);
+      unique.push(item);
+    }
+    if (unique.length >= limit) break;
+  }
+
+  return unique;
 }
 
 /**

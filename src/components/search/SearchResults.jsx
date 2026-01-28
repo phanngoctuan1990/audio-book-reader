@@ -149,7 +149,7 @@ function SearchResults({
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
           {results.map((item, index) => (
             <div
-              key={item.videoId}
+              key={`${item.videoId}-${index}`}
               className="animate-slide-up"
               style={{ animationDelay: `${Math.min(index * 50, 400)}ms` }}
             >
@@ -165,7 +165,7 @@ function SearchResults({
 
             return (
               <button
-                key={item.videoId}
+                key={`${item.videoId}-${index}`}
                 onClick={() => handlePlay(item)}
                 className={`
                   w-full flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl
@@ -189,7 +189,7 @@ function SearchResults({
                     loading="lazy"
                   />
                   {/* Duration badge */}
-                  {item.duration && item.duration !== '0:00' && (
+                  {item.duration && item.duration !== "0:00" && (
                     <span className="absolute bottom-1 right-1 bg-cream-900/80 text-white text-xs px-1.5 py-0.5 rounded">
                       {formatDuration(item.duration)}
                     </span>

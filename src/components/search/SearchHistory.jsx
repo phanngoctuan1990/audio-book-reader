@@ -24,7 +24,10 @@ function SearchHistory({ history, onSelect, onDelete, onClear }) {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {history.map((item) => (
+        {/* Deduplicate history items by query to prevent duplicate key errors */}
+        {Array.from(
+          new Map(history.map((item) => [item.query, item])).values(),
+        ).map((item) => (
           <div
             key={item.query}
             className="group flex items-center bg-cream-100 border border-cream-300/30 rounded-full pl-3 pr-1 py-1 hover:bg-cream-200 hover:border-cream-300/50 transition-all cursor-pointer"
