@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-
+import { useState } from "react";
 import {
   Home as HomeIcon,
   Radio as RadioIcon,
@@ -23,6 +22,48 @@ import Home from "./pages/Home";
 import Radio from "./pages/Radio";
 import Library from "./pages/Library";
 import Favorites from "./pages/Favorites";
+
+/**
+ * Desktop Side Navigation Component
+ */
+function DesktopNav({ currentPage, onNavigate }) {
+  const navItems = [
+    { id: "home", icon: HomeIcon, label: "Trang chủ" },
+    { id: "radio", icon: RadioIcon, label: "Radio" },
+    { id: "library", icon: LibraryIcon, label: "Thư viện" },
+    { id: "favorites", icon: Heart, label: "Yêu thích" },
+  ];
+
+  return (
+    <nav className="flex flex-col gap-2">
+      {navItems.map((item) => {
+        const isActive = currentPage === item.id;
+        const IconComponent = item.icon;
+
+        return (
+          <button
+            key={item.id}
+            onClick={() => onNavigate(item.id)}
+            className={`
+              flex items-center gap-3 px-4 py-3 rounded-xl font-medium
+              transition-all duration-200
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-700
+              ${
+                isActive
+                  ? "bg-gold-400 text-white shadow-soft-3d-sm"
+                  : "text-cream-700 hover:bg-cream-200 hover:text-cream-900"
+              }
+            `}
+            aria-current={isActive ? "page" : undefined}
+          >
+            <IconComponent className="w-5 h-5" />
+            <span>{item.label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
 
 function AppContent() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -97,48 +138,6 @@ function AppContent() {
         </p>
       </footer>
     </div>
-  );
-}
-
-/**
- * Desktop Side Navigation Component
- */
-function DesktopNav({ currentPage, onNavigate }) {
-  const navItems = [
-    { id: "home", icon: HomeIcon, label: "Trang chủ" },
-    { id: "radio", icon: RadioIcon, label: "Radio" },
-    { id: "library", icon: LibraryIcon, label: "Thư viện" },
-    { id: "favorites", icon: Heart, label: "Yêu thích" },
-  ];
-
-  return (
-    <nav className="flex flex-col gap-2">
-      {navItems.map((item) => {
-        const isActive = currentPage === item.id;
-        const IconComponent = item.icon;
-
-        return (
-          <button
-            key={item.id}
-            onClick={() => onNavigate(item.id)}
-            className={`
-              flex items-center gap-3 px-4 py-3 rounded-xl font-medium
-              transition-all duration-200
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-700
-              ${
-                isActive
-                  ? "bg-gold-400 text-white shadow-soft-3d-sm"
-                  : "text-cream-700 hover:bg-cream-200 hover:text-cream-900"
-              }
-            `}
-            aria-current={isActive ? "page" : undefined}
-          >
-            <IconComponent className="w-5 h-5" />
-            <span>{item.label}</span>
-          </button>
-        );
-      })}
-    </nav>
   );
 }
 
